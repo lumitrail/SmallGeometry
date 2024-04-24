@@ -50,13 +50,13 @@ namespace SmallGeometry.Geographic
             if (longitude < -180
                 || 180 < longitude)
             {
-                throw new ArgumentOutOfRangeException(nameof(longitude));
+                throw new ArgumentOutOfRangeException(nameof(longitude), longitude.ToString()); ;
             }
 
             if (latitude < -90
                 || 90 < latitude)
             {
-                throw new ArgumentOutOfRangeException(nameof(latitude));
+                throw new ArgumentOutOfRangeException(nameof(latitude), latitude.ToString());
             }
 
             _x = longitude;

@@ -1,17 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using SmallGeometry.Geographic;
+﻿using SmallGeometry.Geographic;
 
 namespace SmallGeometryTester
 {
     public class Encode
     {
+
         [Fact]
-        public void Test1()
+        public void GoogleExample1()
+        {
+            var examplePoint = new GeoPoint(-179.9832104, 0);
+
+            Assert.Equal("?`~oia@", GooglePolyline5Codec.Encode([examplePoint]));
+        }
+
+        [Fact]
+        public void GoogleExample2()
         {
             var example = new List<GeoPoint>()
             {
