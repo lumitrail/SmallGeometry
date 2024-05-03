@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SmallGeometry.Euclidean
+﻿namespace SmallGeometry.Euclidean
 {
     /// <summary>
-    /// Interval
+    /// Interval including Min and Max.
     /// </summary>
     public struct Interval
     {

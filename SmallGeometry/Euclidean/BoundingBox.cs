@@ -6,26 +6,55 @@ using System.Threading.Tasks;
 
 using SmallGeometry.Exceptions;
 using SmallGeometry.Geographic;
+using SmallGeometry.Interfaces;
 
 namespace SmallGeometry.Euclidean
 {
-    public class BoundingBox
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BoundingBox : ISridCoordinate
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public CoordinateSystem CoordinateSystem { get; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Top => IntervalY.Max;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Bottom => IntervalY.Min;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Left => IntervalX.Min;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Right => IntervalX.Max;
+        
+        
         /// <summary>
         /// X-axis interval
         /// </summary>
-        public Interval IntervalX { get; }
+        private Interval IntervalX { get; }
         /// <summary>
         /// Y-axis interval
         /// </summary>
-        public Interval IntervalY { get; }
-        public double Top => IntervalY.Max;
-        public double Bottom => IntervalY.Min;
-        public double Left => IntervalX.Min;
-        public double Right => IntervalX.Max;
+        private Interval IntervalY { get; }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="x2"></param>
+        /// <param name="y1"></param>
+        /// <param name="y2"></param>
+        /// <param name="coordinateSystem"></param>
         public BoundingBox(double x1, double x2, double y1, double y2, CoordinateSystem coordinateSystem)
         {
             IntervalX = new Interval(x1, x2);
@@ -38,30 +67,42 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="p1"></param>
         /// <param name="p2"></param>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
         /// <exception cref="ArgumentException">failed to get projection info</exception>
+        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public BoundingBox(FlatPoint p1, FlatPoint p2)
         {
-            FlatPoint p2Trans = Transformer.TransformToFlat(p2, p1.CoordinateSystem);
-            CoordinateSystem = p1.CoordinateSystem;
-            IntervalX = new Interval(p1.X, p2Trans.X);
-            IntervalY = new Interval(p1.Y, p2Trans.Y);
+            if (p1.CoordinateSystem == CoordinateSystem.None
+                && p2.CoordinateSystem == CoordinateSystem.None)
+            {
+                CoordinateSystem = CoordinateSystem.None;
+                IntervalX = new Interval(p1.X, p2.X);
+                IntervalY = new Interval(p1.Y, p2.Y);
+            }
+            else
+            {
+                FlatPoint p2Trans = Transformer.TransformToFlat(p2, p1.CoordinateSystem);
+                CoordinateSystem = p1.CoordinateSystem;
+                IntervalX = new Interval(p1.X, p2Trans.X);
+                IntervalY = new Interval(p1.Y, p2Trans.Y);
+            }
         }
+
 
         /// <summary>
         /// Smallest bounding box containing all the points.
         /// </summary>
         /// <param name="points"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
+        /// <exception cref="ArgumentException">points.Count == 0</exception>
+        /// <exception cref="ArgumentNullException">points is null</exception>
+        /// <exception cref="CoordinateSystemNoneException">points contains CoordinateSystem.None point</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public BoundingBox(IEnumerable<FlatPoint> points)
         {
-            if (points == null || points.Count() == 0)
+            ArgumentNullException.ThrowIfNull(points);
+            if (points.Count() == 0)
             {
-                throw new ArgumentNullException(nameof(points));
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
             }
 
             double xmin = points.First().X;
@@ -70,6 +111,8 @@ namespace SmallGeometry.Euclidean
             double ymax = ymin;
 
             CoordinateSystem = points.First().CoordinateSystem;
+
+
 
             foreach (FlatPoint p in points)
             {
@@ -86,6 +129,11 @@ namespace SmallGeometry.Euclidean
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
         public BoundingBox(GeoPoint p1, GeoPoint p2)
         {
             CoordinateSystem = CoordinateSystem.Epsg4326;
@@ -100,9 +148,10 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="ArgumentNullException"></exception>
         public BoundingBox(IEnumerable<GeoPoint> points)
         {
-            if (points == null || points.Count() == 0)
+            ArgumentNullException.ThrowIfNull(points);
+            if (points.Count() == 0)
             {
-                throw new ArgumentNullException(nameof(points));
+                throw new ArgumentException("Argument has no data.", nameof(points));
             }
 
             double xmin = points.First().Longitude;
