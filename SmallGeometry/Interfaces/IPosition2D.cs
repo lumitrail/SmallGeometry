@@ -23,7 +23,7 @@
         /// <returns></returns>
         public static int GetHashCode(double x, double y)
         {
-            return (int)CRC32.Get(new double[] { x, y });
+            return Crc32Wrapper.GetCrc32Hash(x, y);
         }
 
         /// <summary>

@@ -3,7 +3,7 @@
     /// <summary>
     /// Simple unit converters
     /// </summary>
-    public static class UnitConverter
+    internal static class UnitConverter
     {
         /// <summary>
         /// 360 degree to 2PI radian

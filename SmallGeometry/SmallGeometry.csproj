@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotSpatial.Projections" Version="4.0.656" />
+    <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

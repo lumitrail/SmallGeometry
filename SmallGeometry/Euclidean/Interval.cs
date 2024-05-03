@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace SmallGeometry.Euclidean
 {
-    public class Interval
+    /// <summary>
+    /// Interval
+    /// </summary>
+    public struct Interval
     {
         /// <summary>
         /// Min endpoint
@@ -16,14 +19,21 @@ namespace SmallGeometry.Euclidean
         /// Max endpoint
         /// </summary>
         public double Max { get; }
-        public double Length { get; }
+        /// <summary>
+        /// Length between Min and Max
+        /// </summary>
+        public double Length => Max - Min;
 
 
+        /// <summary>
+        /// <inheritdoc cref="Interval"/>
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="x2"></param>
         public Interval(double x1, double x2)
         {
             Min = Math.Min(x1, x2);
             Max = Math.Max(x1, x2);
-            Length = Max - Min;
         }
 
         /// <summary>
@@ -34,23 +44,33 @@ namespace SmallGeometry.Euclidean
         {
             Min = b.Min;
             Max = b.Max;
-            Length = b.Length;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool operator ==(Interval a, Interval b)
         {
             return a.Min == b.Min
                 && a.Max == b.Max;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool operator !=(Interval a, Interval b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        /// 
+        /// Check if there is any point intersecting.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -95,7 +115,7 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
-        /// 
+        /// <inheritdoc cref="Intersects(Interval, Interval)"/>
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -114,8 +134,12 @@ namespace SmallGeometry.Euclidean
             return new Interval(Math.Min(Min, b.Min), Math.Max(Max, b.Max));
         }
 
-
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Checks equality.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
         {
             if (obj == null)
             {
@@ -123,7 +147,8 @@ namespace SmallGeometry.Euclidean
             }
             else if (obj is Interval b)
             {
-                return this == b;
+                return this.Min == b.Min
+                    && this.Max == b.Max;
             }
             else
             {
@@ -131,13 +156,17 @@ namespace SmallGeometry.Euclidean
             }
         }
 
+        /// <summary>
+        /// Gets crc32 hashcode.
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
-            return (int)CRC32.Get(new double[] { Min, Max });
+            return Crc32Wrapper.GetCrc32Hash(Min, Max);
         }
 
         /// <summary>
-        /// 
+        /// Gets string output.
         /// </summary>
         /// <returns>"[Min,Max]"</returns>
         public override string ToString()
