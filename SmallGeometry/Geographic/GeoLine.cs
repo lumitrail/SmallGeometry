@@ -58,12 +58,12 @@ namespace SmallGeometry.Geographic
 
             if (pointCount == 0)
             {
-                throw new ArgumentException("Argument is empty.", nameof(points));
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
             }
             else
             {
 #warning 구현 지점
-                _points = [];
+                _points = ;
             }
         }
 

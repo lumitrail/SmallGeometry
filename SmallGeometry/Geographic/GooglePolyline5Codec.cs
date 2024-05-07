@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace SmallGeometry.Geographic
 {
@@ -27,7 +22,7 @@ namespace SmallGeometry.Geographic
             ArgumentNullException.ThrowIfNull(points);
             if (points.Count() == 0)
             {
-                throw new ArgumentException("Argument has no points.", nameof(points));
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
             }
 
             var resultSb = new System.Text.StringBuilder(points.Count() * 10);
@@ -86,8 +81,13 @@ namespace SmallGeometry.Geographic
         /// <exception cref="ArgumentNullException"></exception>
         public static List<GeoPoint> Decode(string googlePolyline5)
         {
+            // throwing exceptions
             {
-                ArgumentNullException.ThrowIfNull(googlePolyline5);
+                ArgumentException.ThrowIfNullOrWhiteSpace(googlePolyline5);
+                if (googlePolyline5.Length < 2)
+                {
+                    throw new ArgumentException($"Argument is too short.", nameof(googlePolyline5));
+                }
                 char[] errorChars = GetErrorCharacters(googlePolyline5);
                 if (errorChars.Length != 0)
                 {
@@ -107,10 +107,8 @@ namespace SmallGeometry.Geographic
                 int latitudeDiffE5 = GetDiffE5(reversed5BitChunks[i]);
                 int longitudeDiffE5 = GetDiffE5(reversed5BitChunks[i + 1]);
 
-                latitude += (double)latitudeDiffE5 / 1E5;
-                longitude += (double)longitudeDiffE5 / 1E5;
-
-                Console.WriteLine($"{longitude},{latitude}");
+                latitude += latitudeDiffE5 / 1E5;
+                longitude += longitudeDiffE5 / 1E5;
 
                 result.Add(new GeoPoint(longitude, latitude));
             }
@@ -160,7 +158,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         private static char[] GetErrorCharacters(string googlePolyline5)
         {
-            return googlePolyline5.Where(c => c < 63 || c > 0b1111110).ToArray();
+            return googlePolyline5.Where(c => c < 63 || c > 0b1111110).Distinct().ToArray();
         }
 
         /// <summary>

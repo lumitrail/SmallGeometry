@@ -173,11 +173,22 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="targetCoordinateSystem"></param>
+        /// <returns></returns>
+        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
+        /// <exception cref="Exceptions.TransformException"></exception>
+        public FlatPoint Transform(CoordinateSystem targetCoordinateSystem)
+        {
+            return Transformer.TransformToFlat(this, targetCoordinateSystem);
+        }
+
+        /// <summary>
         /// Transforms to GeoPoint
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
         /// <exception cref="Exceptions.TransformException">failed to transform</exception>
         public Geographic.GeoPoint TransformToGeoPoint()
         {

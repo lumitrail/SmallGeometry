@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 using SmallGeometry.Exceptions;
-using SmallGeometry.Geographic;
 using SmallGeometry.Interfaces;
 
 namespace SmallGeometry.Euclidean
 {
     /// <summary>
-    /// 
+    /// Bounding box for flat coordinate system.
     /// </summary>
-    public class BoundingBox : ISridCoordinate
+    public class BoundingBox : ISridCoordinate, IBoundingBox2D
     {
         /// <summary>
         /// 
@@ -35,8 +30,20 @@ namespace SmallGeometry.Euclidean
         /// 
         /// </summary>
         public double Right => IntervalX.Max;
-        
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonIgnore]
+        public double Width => IntervalX.Length;
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonIgnore]
+        public double Height => IntervalY.Length;
+
+
         /// <summary>
         /// X-axis interval
         /// </summary>
@@ -54,12 +61,21 @@ namespace SmallGeometry.Euclidean
         /// <param name="x2"></param>
         /// <param name="y1"></param>
         /// <param name="y2"></param>
-        /// <param name="coordinateSystem"></param>
+        /// <param name="coordinateSystem">must be flat</param>
+        /// <exception cref="NotSupportedException"></exception>
         public BoundingBox(double x1, double x2, double y1, double y2, CoordinateSystem coordinateSystem)
         {
-            IntervalX = new Interval(x1, x2);
-            IntervalY = new Interval(y1, y2);
-            CoordinateSystem = coordinateSystem;
+            if (CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem)
+                || coordinateSystem == CoordinateSystem.None)
+            {
+                IntervalX = new Interval(x1, x2);
+                IntervalY = new Interval(y1, y2);
+                CoordinateSystem = coordinateSystem;
+            }
+            else
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemDiscordant + coordinateSystem);
+            }
         }
 
         /// <summary>
@@ -67,8 +83,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="p1"></param>
         /// <param name="p2"></param>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
+        /// <exception cref="CoordinateSystemNoneException">p1 xor p2 coordinate system is none</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public BoundingBox(FlatPoint p1, FlatPoint p2)
         {
@@ -81,13 +96,12 @@ namespace SmallGeometry.Euclidean
             }
             else
             {
-                FlatPoint p2Trans = Transformer.TransformToFlat(p2, p1.CoordinateSystem);
+                FlatPoint p2Trans = p2.Transform(p1.CoordinateSystem);
                 CoordinateSystem = p1.CoordinateSystem;
                 IntervalX = new Interval(p1.X, p2Trans.X);
                 IntervalY = new Interval(p1.Y, p2Trans.Y);
             }
         }
-
 
         /// <summary>
         /// Smallest bounding box containing all the points.
@@ -97,10 +111,23 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="ArgumentNullException">points is null</exception>
         /// <exception cref="CoordinateSystemNoneException">points contains CoordinateSystem.None point</exception>
         /// <exception cref="TransformException">failed to transform</exception>
+        public BoundingBox(params FlatPoint[] points)
+            : this(points.AsEnumerable())
+        {
+        }
+
+        /// <summary>
+        /// Smallest bounding box containing all the points.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <exception cref="ArgumentException">points is empty</exception>
+        /// <exception cref="ArgumentNullException">points is null</exception>
+        /// <exception cref="CoordinateSystemNoneException">points contains CoordinateSystem.None point</exception>
+        /// <exception cref="TransformException">failed to transform</exception>
         public BoundingBox(IEnumerable<FlatPoint> points)
         {
             ArgumentNullException.ThrowIfNull(points);
-            if (points.Count() == 0)
+            if (!points.Any())
             {
                 throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
             }
@@ -112,11 +139,9 @@ namespace SmallGeometry.Euclidean
 
             CoordinateSystem = points.First().CoordinateSystem;
 
-
-
             foreach (FlatPoint p in points)
             {
-                FlatPoint pTrans = Transformer.TransformToFlat(p, CoordinateSystem);
+                FlatPoint pTrans = p.Transform(CoordinateSystem);
                 xmin = Math.Min(xmin, pTrans.X);
                 ymin = Math.Min(ymin, pTrans.Y);
 
@@ -127,53 +152,6 @@ namespace SmallGeometry.Euclidean
             IntervalX = new Interval(xmin, xmax);
             IntervalY = new Interval(ymin, ymax);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        public BoundingBox(GeoPoint p1, GeoPoint p2)
-        {
-            CoordinateSystem = CoordinateSystem.Epsg4326;
-            IntervalX = new Interval(p1.Longitude, p2.Longitude);
-            IntervalY = new Interval(p1.Latitude, p2.Latitude);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public BoundingBox(IEnumerable<GeoPoint> points)
-        {
-            ArgumentNullException.ThrowIfNull(points);
-            if (points.Count() == 0)
-            {
-                throw new ArgumentException("Argument has no data.", nameof(points));
-            }
-
-            double xmin = points.First().Longitude;
-            double ymin = points.First().Latitude;
-            double xmax = xmin;
-            double ymax = ymin;
-
-            CoordinateSystem = points.First().CoordinateSystem;
-
-            foreach (GeoPoint p in points)
-            {
-                xmin = Math.Min(xmin, p.Longitude);
-                ymin = Math.Min(ymin, p.Latitude);
-
-                xmax = Math.Max(xmax, p.Longitude);
-                ymax = Math.Max(ymax, p.Latitude);
-            }
-
-            IntervalX = new Interval(xmin, xmax);
-            IntervalY = new Interval(ymin, ymax);
-        }
-
 
         private BoundingBox(Interval intervalX, Interval intervalY, CoordinateSystem coordinateSystem)
         {
@@ -186,22 +164,29 @@ namespace SmallGeometry.Euclidean
         /// Copy constructor
         /// </summary>
         /// <param name="b"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public BoundingBox(BoundingBox b)
         {
+            ArgumentNullException.ThrowIfNull(b);
+
             CoordinateSystem = b.CoordinateSystem;
             IntervalX = b.IntervalX;
             IntervalY = b.IntervalY;
         }
 
-
+        /// <summary>
+        /// Pads xPadding left and right, yPadding top and bottom.
+        /// </summary>
+        /// <param name="xPadding"></param>
+        /// <param name="yPadding"></param>
+        /// <returns></returns>
         public BoundingBox GetPaddedCopy(double xPadding, double yPadding)
         {
-            FlatPoint min = new(this.Left - xPadding, this.Bottom - yPadding);
-            FlatPoint max = new(this.Right + xPadding, this.Top + yPadding);
+            var intervalX = new Interval(Right + xPadding, Left - xPadding);
+            var intervalY = new Interval(Top + yPadding, Bottom - yPadding);
 
-            return new BoundingBox(min, max);
+            return new BoundingBox(intervalX, intervalY, CoordinateSystem);
         }
-
 
         /// <summary>
         /// Determine whether p is in this bounding box.
@@ -209,11 +194,10 @@ namespace SmallGeometry.Euclidean
         /// <param name="p"></param>
         /// <returns></returns>
         /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public bool Contains(FlatPoint p)
         {
-            FlatPoint pTrans = Transformer.TransformToFlat(p, CoordinateSystem);
+            FlatPoint pTrans = p.Transform(CoordinateSystem);
             return Contains(pTrans.X, pTrans.Y);
         }
 
@@ -237,13 +221,54 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="ArgumentNullException"></exception>
         public bool Intersects(BoundingBox b)
         {
-            if (b == null)
-            {
-                throw new ArgumentNullException(nameof(b));
-            }
+            ArgumentNullException.ThrowIfNull(b);
 
             return IntervalX.Intersects(b.IntervalX)
                 && IntervalY.Intersects(b.IntervalY);
+        }
+
+        /// <summary>
+        /// Transform into flat bounding box.
+        /// </summary>
+        /// <param name="targetCoordinateSystem"></param>
+        /// <returns></returns>
+        /// <exception cref="CoordinateSystemNoneException"></exception>
+        /// <exception cref="TransformException"></exception>
+        public BoundingBox Transform(CoordinateSystem targetCoordinateSystem)
+        {
+            if (CoordinateSystem == targetCoordinateSystem)
+            {
+                return this;
+            }
+            else if (targetCoordinateSystem == CoordinateSystem.None)
+            {
+                throw new CoordinateSystemNoneException(nameof(targetCoordinateSystem));
+            }
+            else if (CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
+            {
+                FlatPoint min = GetBottomLeft().Transform(targetCoordinateSystem);
+                FlatPoint max = GetTopRight().Transform(targetCoordinateSystem);
+
+                return new BoundingBox(min, max);
+            }
+            else
+            {
+                throw new TransformException(CoordinateSystem, targetCoordinateSystem);
+            }
+        }
+
+        /// <summary>
+        /// Transform into GeoBoundingBox.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="CoordinateSystemNoneException"></exception>
+        /// <exception cref="TransformException"></exception>
+        public Geographic.GeoBoundingBox TransformToGeoBoundingBox()
+        {
+            Geographic.GeoPoint min = GetBottomLeft().TransformToGeoPoint();
+            Geographic.GeoPoint max = GetTopRight().TransformToGeoPoint();
+
+            return new Geographic.GeoBoundingBox(min, max);
         }
 
         /// <summary>
@@ -252,7 +277,8 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException">coordinate system error</exception>
+        /// <exception cref="ArgumentException">coordinate system not maching</exception>
+        /// <exception cref="TransformException"></exception>
         public BoundingBox Union(BoundingBox b)
         {
             if (b == null)
@@ -261,7 +287,8 @@ namespace SmallGeometry.Euclidean
             }
             else if (b.CoordinateSystem != CoordinateSystem)
             {
-                throw new ArgumentException();
+                BoundingBox bTrans = b.Transform(CoordinateSystem);
+                return new BoundingBox(IntervalX.Union(bTrans.IntervalX), IntervalY.Union(bTrans.IntervalY), CoordinateSystem);
             }
             else
             {
@@ -269,21 +296,28 @@ namespace SmallGeometry.Euclidean
             }
         }
 
-
-        public double Width()
+        /// <summary>
+        /// Min x, y
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint GetBottomLeft()
         {
-            return IntervalX.Length;
-        }
-        public double Height()
-        {
-            return IntervalY.Length;
-        }
-        public double Area()
-        {
-            return Width() * Height();
+            return new FlatPoint(Left, Bottom, CoordinateSystem);
         }
 
-        // return a string representation
+        /// <summary>
+        /// Max x, y
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint GetTopRight()
+        {
+            return new FlatPoint(Right, Top, CoordinateSystem);
+        }
+
+        /// <summary>
+        /// Returns a string representation
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"[ X:{IntervalX}, Y:{IntervalY} ]";
