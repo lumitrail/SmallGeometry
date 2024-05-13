@@ -63,7 +63,6 @@ namespace SmallGeometry.Geographic
             else
             {
 #warning 구현 지점
-                _points = ;
             }
         }
 
