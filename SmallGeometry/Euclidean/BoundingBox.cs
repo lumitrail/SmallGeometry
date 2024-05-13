@@ -281,11 +281,9 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="TransformException"></exception>
         public BoundingBox Union(BoundingBox b)
         {
-            if (b == null)
-            {
-                throw new ArgumentNullException(nameof(b));
-            }
-            else if (b.CoordinateSystem != CoordinateSystem)
+            ArgumentNullException.ThrowIfNull(b);
+
+            if (b.CoordinateSystem != CoordinateSystem)
             {
                 BoundingBox bTrans = b.Transform(CoordinateSystem);
                 return new BoundingBox(IntervalX.Union(bTrans.IntervalX), IntervalY.Union(bTrans.IntervalY), CoordinateSystem);
