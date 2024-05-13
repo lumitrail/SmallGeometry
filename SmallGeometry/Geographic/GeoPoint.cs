@@ -47,20 +47,34 @@ namespace SmallGeometry.Geographic
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public GeoPoint(double longitude, double latitude)
         {
-            if (longitude < -180
-                || 180 < longitude)
-            {
-                throw new ArgumentOutOfRangeException(nameof(longitude), longitude.ToString()); ;
-            }
+            bool longitudeOut =
+                longitude < -180
+                || 180 < longitude;
 
-            if (latitude < -90
-                || 90 < latitude)
-            {
-                throw new ArgumentOutOfRangeException(nameof(latitude), latitude.ToString());
-            }
+            bool latitudeOut =
+                latitude < -90
+                || 90 < latitude;
 
-            _x = longitude;
-            _y = latitude;
+            if (longitudeOut && latitudeOut)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(longitude)},{nameof(latitude)}",
+                    $"Longitude and Latitude are out of range: {longitude},{latitude}");
+            }
+            else if (longitudeOut)
+            {
+                throw new ArgumentOutOfRangeException(nameof(longitude),
+                    $"Longitude is out of range: {longitude},{latitude}");
+            }
+            else if (latitudeOut)
+            {
+                throw new ArgumentOutOfRangeException(nameof(latitude),
+                    $"Latitude is out of range: {longitude},{latitude}");
+            }
+            else
+            {
+                _x = longitude;
+                _y = latitude;
+            }
         }
 
         /// <summary>
@@ -159,7 +173,6 @@ namespace SmallGeometry.Geographic
         /// <param name="coordinateSystem"></param>
         /// <returns></returns>
         /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
         /// <exception cref="Exceptions.TransformException">failed to transform</exception>
         public Euclidean.FlatPoint Transform(CoordinateSystem coordinateSystem)
         {

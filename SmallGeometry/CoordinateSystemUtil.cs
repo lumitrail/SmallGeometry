@@ -22,5 +22,23 @@
             return coordinateSystem == CoordinateSystem.Epsg5179
                 || coordinateSystem == CoordinateSystem.Epsg5186;
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="coordinateSystemObjects"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool IsCoordinateSystemMixed(params Interfaces.ISridCoordinate[] coordinateSystemObjects)
+        {
+            ArgumentNullException.ThrowIfNull(coordinateSystemObjects);
+            if (coordinateSystemObjects.Count() == 0)
+            {
+                return false;
+            }
+
+            return coordinateSystemObjects.DistinctBy(cso => cso.CoordinateSystem).Count() > 1;
+        }
     }
 }

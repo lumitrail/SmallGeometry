@@ -36,5 +36,20 @@
             From = from.ToString();
             To = to.ToString();
         }
+
+        /// <summary>
+        /// <inheritdoc cref="TransformException"/>
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="message"></param>
+        public TransformException(CoordinateSystem from, CoordinateSystem to, string? message)
+            : this(from, to)
+        {
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                Message = message;
+            }
+        }
     }
 }
