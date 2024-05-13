@@ -11,7 +11,7 @@ namespace SmallGeometry.Geographic
 
         #region Encode
         /// <summary>
-        /// 
+        /// Gets google polyline 5 from points.
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
@@ -73,7 +73,7 @@ namespace SmallGeometry.Geographic
 
         #region Decode
         /// <summary>
-        /// 
+        /// Decodes google polyline 5 string.
         /// </summary>
         /// <param name="googlePolyline5"></param>
         /// <returns></returns>
