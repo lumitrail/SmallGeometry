@@ -3,20 +3,20 @@
     /// <summary>
     /// Interval including Min and Max.
     /// </summary>
-    public struct Interval
+    public readonly struct Interval
     {
         /// <summary>
         /// Min endpoint
         /// </summary>
-        public double Min { get; }
+        public readonly double Min { get; }
         /// <summary>
         /// Max endpoint
         /// </summary>
-        public double Max { get; }
+        public readonly double Max { get; }
         /// <summary>
         /// Length between Min and Max
         /// </summary>
-        public double Length => Max - Min;
+        public readonly double Length => Max - Min;
 
 
         /// <summary>
@@ -102,7 +102,7 @@
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public bool Contains(double x)
+        public readonly bool Contains(double x)
         {
             return Min <= x
                 && x <= Max;
@@ -113,7 +113,7 @@
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public bool Intersects(Interval b)
+        public readonly bool Intersects(Interval b)
         {
             return Intersects(this, b);
         }
@@ -123,7 +123,7 @@
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public Interval Union(Interval b)
+        public readonly Interval Union(Interval b)
         {
             return new Interval(Math.Min(Min, b.Min), Math.Max(Max, b.Max));
         }
@@ -133,7 +133,7 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             if (obj == null)
             {
@@ -154,7 +154,7 @@
         /// Gets crc32 hashcode.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return Crc32Wrapper.GetCrc32Hash(Min, Max);
         }
@@ -163,7 +163,7 @@
         /// Gets string output.
         /// </summary>
         /// <returns>"[Min,Max]"</returns>
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"[{Min},{Max}]";
         }

@@ -8,11 +8,11 @@
         /// <summary>
         /// 
         /// </summary>
-        double X { get; }
+        public double X { get; }
         /// <summary>
         /// 
         /// </summary>
-        double Y { get; }
+        public double Y { get; }
 
 
         /// <summary>

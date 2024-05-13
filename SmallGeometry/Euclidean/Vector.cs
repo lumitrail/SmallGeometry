@@ -8,20 +8,20 @@ namespace SmallGeometry.Euclidean
     /// <summary>
     /// Vector on flat plane space.
     /// </summary>
-    public struct Vector : IPosition2D
+    public readonly struct Vector : IPosition2D
     {
         /// <summary>
         /// 
         /// </summary>
-        public double X { get; }
+        public readonly double X { get; }
         /// <summary>
         /// 
         /// </summary>
-        public double Y { get; }
+        public readonly double Y { get; }
         /// <summary>
         /// Euclidean length.
         /// </summary>
-        public double Size { get; }
+        public readonly double Size { get; }
 
 
         /// <summary>
@@ -211,6 +211,11 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="DivideByZeroException"></exception>
         public static Vector operator /(Vector v, double a)
         {
+            if (a == 0)
+            {
+                throw new DivideByZeroException();
+            }
+
             return new Vector(v.X / a, v.Y / a);
         }
 
@@ -317,7 +322,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns></returns>
         /// <remarks>Zero vector results in false.</remarks>
-        public bool IsRightwardDirected()
+        public readonly bool IsRightwardDirected()
         {
             return (X > 0)
                 || (X == 0 && Y > 0);
@@ -328,7 +333,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns></returns>
         /// <remarks>Zero vector results in zero vector.</remarks>
-        public Vector GetNormalizedVector()
+        public readonly Vector GetNormalizedVector()
         {
             if (Size == 0)
             {
@@ -345,7 +350,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns></returns>
         /// <remarks>Zero vector results in zero vector.</remarks>
-        public Vector GetRightwardFlippedVector()
+        public readonly Vector GetRightwardFlippedVector()
         {
             if (this.IsRightwardDirected())
             {
@@ -362,7 +367,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns>[0, 360)</returns>
         /// <remarks>Zero vector returns 0</remarks>
-        public double GetHeading()
+        public readonly double GetHeading()
         {
             var north = new Vector(0, 1);
 
@@ -392,7 +397,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             if (obj == null)
             {
@@ -410,13 +415,13 @@ namespace SmallGeometry.Euclidean
 
 
         /// <inheritdoc cref="IPosition2D.GetHashCode(double, double)"/>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return IPosition2D.GetHashCode(X, Y);
         }
 
         /// <inheritdoc cref="IPosition2D.ToString(double, double)"/>
-        public override string ToString()
+        public readonly override string ToString()
         {
             return IPosition2D.ToString(X, Y);
         }

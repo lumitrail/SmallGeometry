@@ -7,36 +7,36 @@ namespace SmallGeometry.Geographic
     /// <summary>
     /// Epsg4326(=WGS84) Point
     /// </summary>
-    public struct GeoPoint : IPosition2D, ISridCoordinate
+    public readonly struct GeoPoint : IPosition2D, ISridCoordinate
     {
         /// <summary>
         /// 
         /// </summary>
         [JsonIgnore]
-        public CoordinateSystem CoordinateSystem => CoordinateSystem.Epsg4326;
+        public readonly CoordinateSystem CoordinateSystem => CoordinateSystem.Epsg4326;
         /// <summary>
         /// East-West(X), [-180,180]
         /// </summary>
-        public double Longitude => _x;
+        public readonly double Longitude => _x;
         /// <summary>
         /// North-South(Y), [-90,90]
         /// </summary>
-        public double Latitude => _y;
+        public readonly double Latitude => _y;
 
         /// <summary>
         /// Same to longitude
         /// </summary>
         [JsonIgnore]
-        public double X => _x;
+        public readonly double X => _x;
         /// <summary>
         /// Same to latitude
         /// </summary>
         [JsonIgnore]
-        public double Y => _y;
+        public readonly double Y => _y;
 
 
-        private double _x;
-        private double _y;
+        private readonly double _x;
+        private readonly double _y;
 
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
         /// <exception cref="Exceptions.TransformException">failed to transform</exception>
-        public Euclidean.FlatPoint Transform(CoordinateSystem coordinateSystem)
+        public readonly Euclidean.FlatPoint Transform(CoordinateSystem coordinateSystem)
         {
             return Transformer.TransformToFlat(this, coordinateSystem);
         }
@@ -184,7 +184,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public double GetDistanceInMeter(GeoPoint b)
+        public readonly double GetDistanceInMeter(GeoPoint b)
         {
             return GetDistanceInMeter(this, b);
         }
@@ -194,7 +194,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <returns>"ST_Point(Longitude,Latitude,4326)"</returns>
         /// <remarks>Postgis 3.2.0 or above</remarks>
-        public string GetWkt()
+        public readonly string GetWkt()
         {
             return $"ST_Point({Longitude},{Latitude},4326)";
         }
@@ -205,7 +205,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             if (obj == null)
             {
@@ -222,15 +222,15 @@ namespace SmallGeometry.Geographic
         }
 
         /// <inheritdoc cref="IPosition2D.GetHashCode(double, double)"/>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return IPosition2D.GetHashCode(_x, _y);
         }
 
         /// <inheritdoc cref="IPosition2D.ToString(double, double)"/>
-        public static string ToString(double x, double y)
+        public readonly override string ToString()
         {
-            return IPosition2D.ToString(x, y);
+            return IPosition2D.ToString(_x, _y);
         }
     }
 }

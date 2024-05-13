@@ -8,6 +8,6 @@
         /// <summary>
         /// EPSG
         /// </summary>
-        CoordinateSystem CoordinateSystem { get; }
+        public CoordinateSystem CoordinateSystem { get; }
     }
 }

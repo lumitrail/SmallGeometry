@@ -7,20 +7,20 @@ namespace SmallGeometry.Euclidean
     /// <summary>
     /// Euclidean flat-plane point.
     /// </summary>
-    public struct FlatPoint : IPosition2D, ISridCoordinate
+    public readonly struct FlatPoint : IPosition2D, ISridCoordinate
     {
         /// <summary>
         /// 
         /// </summary>
-        public CoordinateSystem CoordinateSystem { get; }
+        public readonly CoordinateSystem CoordinateSystem { get; }
         /// <summary>
         /// 
         /// </summary>
-        public double X { get; }
+        public readonly double X { get; }
         /// <summary>
         /// 
         /// </summary>
-        public double Y { get; }
+        public readonly double Y { get; }
 
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         public static FlatPoint operator -(FlatPoint p, Vector v)
         {
-            return new FlatPoint(p.X - v.X, p.Y - v.Y, p.CoordinateSystem);
+            return p + (-v);
         }
 
 
@@ -179,7 +179,7 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
         /// <exception cref="Exceptions.TransformException"></exception>
-        public FlatPoint Transform(CoordinateSystem targetCoordinateSystem)
+        public readonly FlatPoint Transform(CoordinateSystem targetCoordinateSystem)
         {
             return Transformer.TransformToFlat(this, targetCoordinateSystem);
         }
@@ -190,7 +190,7 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
         /// <exception cref="Exceptions.TransformException">failed to transform</exception>
-        public Geographic.GeoPoint TransformToGeoPoint()
+        public readonly Geographic.GeoPoint TransformToGeoPoint()
         {
             return Transformer.TransformToGeoPoint(this);
         }
@@ -203,7 +203,7 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
         /// <exception cref="ArgumentException">failed to get projection info</exception>
         /// <exception cref="Exceptions.TransformException">failed to transform</exception>
-        public double GetDistance(FlatPoint b)
+        public readonly double GetDistance(FlatPoint b)
         {
             return GetDistance(this, b);
         }
@@ -213,7 +213,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns>"ST_Point(X,Y,srid)" or "ST_Point(X,Y)"</returns>
         /// <remarks>Postgis 3.2.0 or above</remarks>
-        public string GetWkt()
+        public readonly string GetWkt()
         {
             if (CoordinateSystem != CoordinateSystem.None)
             {
@@ -231,7 +231,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             if (obj == null)
             {
@@ -248,13 +248,13 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <inheritdoc cref="IPosition2D.GetHashCode(double, double)"/>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return IPosition2D.GetHashCode(X, Y);
         }
 
         /// <inheritdoc cref="IPosition2D.ToString(double, double)"/>
-        public override string ToString()
+        public readonly override string ToString()
         {
             return IPosition2D.ToString(X, Y);
         }
