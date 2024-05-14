@@ -145,21 +145,21 @@ namespace SmallGeometry
         /// <param name="sourcePoint"></param>
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
+        /// <exception cref="CoordinateSystemNoneException">source XOR target coordinate system is none</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public static FlatPoint TransformToFlat(FlatPoint sourcePoint, CoordinateSystem targetCoordinateSystem)
         {
-            if (targetCoordinateSystem == CoordinateSystem.None)
+            if (sourcePoint.CoordinateSystem == targetCoordinateSystem)
+            {
+                return sourcePoint;
+            }
+            else if (targetCoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(targetCoordinateSystem));
             }
             else if (sourcePoint.CoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(sourcePoint));
-            }
-            else if (sourcePoint.CoordinateSystem == targetCoordinateSystem)
-            {
-                return sourcePoint;
             }
             else
             {
