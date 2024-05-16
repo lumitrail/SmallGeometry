@@ -154,6 +154,15 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
+        /// Picks a random point inside the bounding box.
+        /// </summary>
+        /// <returns></returns>
+        public GeoPoint Random()
+        {
+            return new GeoPoint(IntervalX.Random(), IntervalY.Random());
+        }
+
+        /// <summary>
         /// Determine whether p is in this bounding box.
         /// </summary>
         /// <param name="p"></param>

@@ -5,6 +5,8 @@
     /// </summary>
     public readonly struct Interval
     {
+        private static readonly Random Rng = new Random((int)DateTime.Now.Ticks);
+
         /// <summary>
         /// Min endpoint
         /// </summary>
@@ -96,6 +98,14 @@
             return new Interval(Math.Min(a.Min, b.Min), Math.Max(a.Max, b.Max));
         }
 
+        /// <summary>
+        /// Picks a random value between Min and Max.
+        /// </summary>
+        /// <returns></returns>
+        public readonly double Random()
+        {
+            return Min + (Length * Rng.NextDouble());
+        }
 
         /// <summary>
         /// x is in [Min, Max]?

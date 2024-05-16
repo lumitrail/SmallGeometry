@@ -25,6 +25,12 @@ namespace SmallGeometry.Euclidean
 
 
         /// <summary>
+        /// Zero vector
+        /// </summary>
+        public static readonly Vector Zero = new Vector(0, 0);
+
+
+        /// <summary>
         /// <inheritdoc cref="Vector"/>
         /// </summary>
         /// <param name="x"></param>
@@ -253,13 +259,9 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <param name="toleranceInDegree"></param>
         /// <returns></returns>
-        /// <remarks>Zero vector results in false.</remarks>
+        /// <remarks>Zero vector results in true.</remarks>
         public static bool IsParallel(Vector a, Vector b, double toleranceInDegree)
         {
-            if (a.Size == 0 || b.Size == 0)
-            {
-                return false;
-            }
             double cp = CrossProduct(a, b); // going 0 when parallel
             double sm = a.Size * b.Size;
             double sinAB = Math.Abs(cp / sm);
@@ -275,7 +277,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        /// <remarks>Zero vector results in false.</remarks>
+        /// <remarks>Zero vector results in true.</remarks>
         public static bool IsParallel(Vector a, Vector b)
         {
             return IsParallel(a, b, 0.001);
@@ -288,13 +290,9 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <param name="toleranceInDegree"></param>
         /// <returns></returns>
-        /// <remarks>Zero vector results in false.</remarks>
+        /// <remarks>Zero vector results in true.</remarks>
         public static bool IsOrthogonal(Vector a, Vector b, double toleranceInDegree)
         {
-            if (a.Size == 0 || b.Size == 0)
-            {
-                return false;
-            }
             double ip = InnerProduct(a, b); // going 0 when orthogonal
             double sm = a.Size * b.Size;
             double cosAB = Math.Abs(ip / sm);
@@ -310,12 +308,48 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        /// <remarks>Zero vector results in false.</remarks>
+        /// <remarks>Zero vector results in true.</remarks>
         public static bool IsOrthogonal(Vector a, Vector b)
         {
             return IsOrthogonal(a, b, 0.001);
         }
 
+        /// <summary>
+        /// Gets smaller angle between two vectors.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>smaller angle between a and b</returns>
+        /// <remarks>Zero vector results 0</remarks>
+        public static double GetAngleDegree(Vector a, Vector b)
+        {
+            if (a == Zero || b == Zero)
+            {
+                return 0;
+            }
+
+            double cosRadian = InnerProduct(a, b) / a.Size / b.Size;
+            double radian = Math.Acos(cosRadian);
+
+            return UnitConverter.RadianToDegree(radian);
+        }
+
+        /// <inheritdoc cref="GetAngleDegree(Vector, Vector)"/>
+        public readonly double GetAngleDegree(Vector b)
+        {
+            return GetAngleDegree(this, b);
+        }
+
+        /// <summary>
+        /// Gets rotated vector by degree clockwise.
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <returns></returns>
+        public Vector GetRotatedVector(double degree)
+        {
+            double currentDegree = GetAngleDegree(new Vector(0, 1));
+            return new Vector(currentDegree + degree);
+        }
 
         /// <summary>
         /// True when Clockwise degree more or equal to 0 and less than 180.
@@ -335,7 +369,7 @@ namespace SmallGeometry.Euclidean
         /// <remarks>Zero vector results in zero vector.</remarks>
         public readonly Vector GetNormalizedVector()
         {
-            if (Size == 0)
+            if (this == Zero)
             {
                 return this;
             }
@@ -377,10 +411,10 @@ namespace SmallGeometry.Euclidean
             Debug.Assert(northInnerProduct >= -1);
 
             double radian = Math.Acos(northInnerProduct);
-            Debug.Assert(radian != double.NaN);
+            Debug.Assert(!double.IsNaN(radian));
 
             double degree = UnitConverter.RadianToDegree(radian);
-            Debug.Assert(degree != double.NaN);
+            Debug.Assert(!double.IsNaN(degree));
 
             if (X >= 0)
             {

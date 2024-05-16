@@ -189,6 +189,15 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
+        /// Picks a random point inside the bounding box.
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint Random()
+        {
+            return new FlatPoint(IntervalX.Random(), IntervalY.Random(), CoordinateSystem);
+        }
+
+        /// <summary>
         /// Determine whether p is in this bounding box.
         /// </summary>
         /// <param name="p"></param>
