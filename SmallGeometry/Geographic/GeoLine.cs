@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace SmallGeometry.Geographic
 {
@@ -19,8 +13,6 @@ namespace SmallGeometry.Geographic
         [JsonIgnore]
         public CoordinateSystem CoordinateSystem => CoordinateSystem.Epsg4326;
 
-        private ImmutableList<GeoPoint> _points { get; }
-
         /// <summary>
         /// 
         /// </summary>
@@ -34,25 +26,14 @@ namespace SmallGeometry.Geographic
         /// </summary>
         public int Count => _points.Count;
 
-
-        private double LengthInMeter = -1;
-
-
         /// <summary>
-        /// <inheritdoc cref="GeoLine"/>
+        /// 
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        public GeoLine(GeoPoint a, GeoPoint b)
-        {
-            _points = [a, b];
-        }
+        public GeoBoundingBox BoundingBox { get; }
 
-        /// <inheritdoc cref="GeoLine(IEnumerable{GeoPoint})"/>
-        public GeoLine(params GeoPoint[] points)
-            : this(points.AsEnumerable())
-        {
-        }
+        private IReadOnlyList<GeoPoint> _points { get; }
+        private double _lengthInMeter = -1;
+
 
         /// <summary>
         /// <inheritdoc cref="GeoLine"/>
@@ -69,14 +50,22 @@ namespace SmallGeometry.Geographic
             {
                 throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
             }
-            else if (pointCount < 2)
+            else if (pointCount == 1)
             {
                 _points = [points.First(), points.First()];
             }
             else // pointsCount > 1
             {
-                _points = ImmutableList.CreateRange(points);
+                _points = points.ToArray();
             }
+
+            BoundingBox = new GeoBoundingBox(_points);
+        }
+
+        /// <inheritdoc cref="GeoLine(IEnumerable{GeoPoint})"/>
+        public GeoLine(params GeoPoint[] points)
+            : this(points.AsEnumerable())
+        {
         }
 
         /// <inheritdoc cref="GooglePolyline5Codec.Decode(string)"/>
@@ -91,7 +80,8 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentException">line is empty</exception>
+        /// <exception cref="ArgumentNullException">line is null</exception>
         public static List<GeoPoint> RemoveDuplicatedPoints(IEnumerable<GeoPoint> line)
         {
             ArgumentNullException.ThrowIfNull(line);
@@ -134,15 +124,16 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public double GetLengthInMeter()
         {
-            if (LengthInMeter < 0)
+            if (_lengthInMeter < 0)
             {
+                _lengthInMeter = 0;
                 for (int i=1; i<Count; ++i)
                 {
-                    LengthInMeter += _points[i - 1].GetDistanceInMeter(_points[i]);
+                    _lengthInMeter += _points[i - 1].GetDistanceInMeter(_points[i]);
                 }
             }
 
-            return LengthInMeter;
+            return _lengthInMeter;
         }
 
         /// <summary>
