@@ -119,7 +119,7 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
-        /// 
+        /// Gets Haversine length.
         /// </summary>
         /// <returns></returns>
         public double GetLengthInMeter()
@@ -151,7 +151,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public override string ToString()
         {
-            return $"[{string.Join(',', _points.Select(p => p.ToString()).ToArray())}]";
+            return $"[{string.Join(',', _points.Select(p => p.ToString()))}]";
         }
 
         /// <summary>

@@ -5,7 +5,7 @@ namespace SmallGeometry.Euclidean
     /// <summary>
     /// Finite line segment.
     /// </summary>
-    internal class FlatLineSegment
+    public class FlatLineSegment
     {
         public CoordinateSystem CoordinateSystem => Start.CoordinateSystem;
         public FlatPoint Start { get; }
