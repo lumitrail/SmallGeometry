@@ -35,6 +35,7 @@ namespace SmallGeometry.Geographic
         private double _lengthInMeter = -1;
 
 
+        #region Constructors
         /// <summary>
         /// <inheritdoc cref="GeoLine"/>
         /// </summary>
@@ -73,6 +74,8 @@ namespace SmallGeometry.Geographic
             : this(GooglePolyline5Codec.Decode(googlePolyline5))
         {
         }
+        #endregion
+
 
 
         /// <summary>
@@ -107,15 +110,14 @@ namespace SmallGeometry.Geographic
         }
 
 
+
         /// <summary>
-        /// 
+        /// <inheritdoc cref="GooglePolyline5Codec.Encode(IEnumerable{GeoPoint})"/>
         /// </summary>
         /// <returns></returns>
-        public GeoLine GetReversedCopy()
+        public string GetGooglePolyline5()
         {
-            var reversedPoints = new List<GeoPoint>(_points);
-            reversedPoints.Reverse();
-            return new GeoLine(reversedPoints);
+            return GooglePolyline5Codec.Encode(this);
         }
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace SmallGeometry.Geographic
             if (_lengthInMeter < 0)
             {
                 _lengthInMeter = 0;
-                for (int i=1; i<Count; ++i)
+                for (int i = 1; i < Count; ++i)
                 {
                     _lengthInMeter += _points[i - 1].GetDistanceInMeter(_points[i]);
                 }
@@ -137,13 +139,37 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
-        /// <inheritdoc cref="GooglePolyline5Codec.Encode(IEnumerable{GeoPoint})"/>
+        /// 
         /// </summary>
         /// <returns></returns>
-        public string GetGooglePolyline5()
+        public GeoLine GetReversedCopy()
         {
-            return GooglePolyline5Codec.Encode(this);
+            var reversedPoints = new List<GeoPoint>(_points);
+            reversedPoints.Reverse();
+            return new GeoLine(reversedPoints);
         }
+
+
+
+        /// <summary>
+        /// Gets a copy of list.
+        /// </summary>
+        /// <returns></returns>
+        public List<GeoPoint> ToList()
+        {
+            return new List<GeoPoint>(_points);
+        }
+
+        /// <summary>
+        /// Gets a copy of array.
+        /// </summary>
+        /// <returns></returns>
+        public GeoPoint[] ToArray()
+        {
+            return _points.ToArray();
+        }
+
+
 
         /// <summary>
         /// [[x,y],[x,y],...,[x,y]]
@@ -170,24 +196,6 @@ namespace SmallGeometry.Geographic
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _points.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Gets a copy of list.
-        /// </summary>
-        /// <returns></returns>
-        public List<GeoPoint> ToList()
-        {
-            return new List<GeoPoint>(_points);
-        }
-
-        /// <summary>
-        /// Gets a copy of array.
-        /// </summary>
-        /// <returns></returns>
-        public GeoPoint[] ToArray()
-        {
-            return _points.ToArray();
         }
     }
 }

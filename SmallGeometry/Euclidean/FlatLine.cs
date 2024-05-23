@@ -41,6 +41,7 @@ namespace SmallGeometry.Euclidean
         private double _length = -1;
 
 
+        #region Constructors
         /// <summary>
         /// 
         /// </summary>
@@ -75,6 +76,8 @@ namespace SmallGeometry.Euclidean
             : this(points.AsEnumerable())
         {
         }
+        #endregion
+
 
 
         /// <summary>
@@ -105,99 +108,20 @@ namespace SmallGeometry.Euclidean
             return result;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">points is empty</exception>
-        /// <exception cref="ArgumentNullException">points is null</exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">points contains both None and else</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
-        public static IReadOnlyList<FlatPoint> HomogenizeCoordinateSystem(IEnumerable<FlatPoint> points)
-        {
-            ArgumentNullException.ThrowIfNull(points);
-            int pointsCount = points.Count();
 
-            if (pointsCount == 0)
-            {
-                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
-            }
-
-            CoordinateSystem[] coordinateSystems = points.Select(p => p.CoordinateSystem).Distinct().ToArray();
-
-            if (coordinateSystems.Length > 1)
-            {
-                if (coordinateSystems.Contains(CoordinateSystem.None))
-                {
-                    throw new Exceptions.CoordinateSystemNoneException(nameof(points));
-                }
-                else
-                {
-                    var flatPoints = new List<FlatPoint>(pointsCount);
-                    CoordinateSystem cs = points.First().CoordinateSystem;
-                    foreach (FlatPoint fp in points)
-                    {
-                        flatPoints.Add(fp.Transform(cs));
-                    }
-                    return flatPoints;
-                }
-            }
-            else
-            {
-                return points.ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Gets intersections of lines.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
-        public static List<FlatPoint> GetIntersections(FlatLine a, FlatLine b)
-        {
-            ArgumentNullException.ThrowIfNull(a);
-            ArgumentNullException.ThrowIfNull(b);
-
-            FlatLine bTrans = new FlatLine(HomogenizeCoordinateSystem(b));
-
-            // Max possible result.Count is (a.Count * b.Count), but...
-            var result = new List<FlatPoint>(a.Count + bTrans.Count);
-
-            List<FlatLineSegment> aSegments = a.GetLineSegments();
-            List<FlatLineSegment> bSegments = bTrans.GetLineSegments();
-
-            foreach (var aSeg in aSegments)
-            {
-                foreach (var bSeg in bSegments)
-                {
-                    FlatPoint? intersection = aSeg.FindIntersectingPointOrNull(bSeg);
-
-                    if (intersection.HasValue)
-                    {
-                        result.Add(intersection.Value);
-                    }
-                }
-            }
-
-            return result;
-        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exceptions.TransformException"></exception>
         public FlatLine GetTransformedFlatCopy(CoordinateSystem targetCoordinateSystem)
         {
             if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
             {
-                throw new Exceptions.TransformException();
+                throw new ArgumentException(ExceptionMessages.CoordinateSystemMustBeFlat, nameof(targetCoordinateSystem));
             }
 
             FlatPoint first = _points[0].Transform(targetCoordinateSystem);
@@ -211,6 +135,7 @@ namespace SmallGeometry.Euclidean
                 newPoints.Add(_points[i]);
             }
 
+            // Constructor does the transformation.
             return new FlatLine(newPoints);
         }
 
@@ -231,11 +156,6 @@ namespace SmallGeometry.Euclidean
             return new Geographic.GeoLine(geoPoints);
         }
 
-        public FlatLine Trim()
-        {
-
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -246,6 +166,12 @@ namespace SmallGeometry.Euclidean
             reversedPoints.Reverse();
             return new FlatLine(reversedPoints);
         }
+
+        public FlatLine Trim()
+        {
+
+        }
+        
 
         /// <summary>
         /// Gets Euclidean length.
@@ -392,6 +318,46 @@ namespace SmallGeometry.Euclidean
             return result;
         }
 
+
+        /// <summary>
+        /// Gets intersections of lines.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
+        /// <exception cref="Exceptions.TransformException"></exception>
+        public static List<FlatPoint> GetIntersections(FlatLine a, FlatLine b)
+        {
+            ArgumentNullException.ThrowIfNull(a);
+            ArgumentNullException.ThrowIfNull(b);
+
+            FlatLine bTrans = new FlatLine(HomogenizeCoordinateSystem(b));
+
+            // Max possible result.Count is (a.Count * b.Count), but...
+            var result = new List<FlatPoint>(a.Count + bTrans.Count);
+
+            List<FlatLineSegment> aSegments = a.GetLineSegments();
+            List<FlatLineSegment> bSegments = bTrans.GetLineSegments();
+
+            foreach (var aSeg in aSegments)
+            {
+                foreach (var bSeg in bSegments)
+                {
+                    FlatPoint? intersection = aSeg.FindIntersectingPointOrNull(bSeg);
+
+                    if (intersection.HasValue)
+                    {
+                        result.Add(intersection.Value);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
         /// <inheritdoc cref="GetIntersections(FlatLine, FlatLine)"/>
         public List<FlatPoint> GetIntersections(FlatLine b)
         {
@@ -419,6 +385,48 @@ namespace SmallGeometry.Euclidean
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _points.GetEnumerator();
+        }
+
+
+
+        /// <summary>
+        /// Transform points into one coordinate system(To points.First()).
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">points is empty</exception>
+        /// <exception cref="ArgumentNullException">points is null</exception>
+        /// <exception cref="Exceptions.CoordinateSystemNoneException">points contains both None and else</exception>
+        /// <exception cref="Exceptions.TransformException"></exception>
+        private static IReadOnlyList<FlatPoint> HomogenizeCoordinateSystem(IEnumerable<FlatPoint> points)
+        {
+            ArgumentNullException.ThrowIfNull(points);
+            int pointsCount = points.Count();
+
+            if (pointsCount == 0)
+            {
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(points));
+            }
+
+            CoordinateSystem[] coordinateSystems = points.Select(p => p.CoordinateSystem).Distinct().ToArray();
+            System.Diagnostics.Debug.Assert(coordinateSystems.Length != 0);
+
+            if (coordinateSystems.Length == 1)
+            {
+                return points.ToArray();
+            }
+            if (coordinateSystems.Contains(CoordinateSystem.None))
+            {
+                throw new Exceptions.CoordinateSystemNoneException(nameof(points));
+            }
+
+            CoordinateSystem transformTo = points.First().CoordinateSystem;
+
+            IReadOnlyList<FlatPoint> result = points
+                .Select(p => p.Transform(transformTo))
+                .ToList();
+
+            return result;
         }
     }
 }
