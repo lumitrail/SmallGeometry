@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using SmallGeometry.Interfaces;
+using SmallGeometry.Exceptions;
 
 namespace SmallGeometry.Euclidean
 {
@@ -16,11 +17,14 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// 
         /// </summary>
-        public readonly double X { get; }
+        public readonly double X => Coordinate2D.X;
         /// <summary>
         /// 
         /// </summary>
-        public readonly double Y { get; }
+        public readonly double Y => Coordinate2D.Y;
+
+
+        internal Primitives.Coordinate2D Coordinate2D { get; }
 
 
         /// <summary>
@@ -30,8 +34,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="y"></param>
         public FlatPoint(double x, double y)
         {
-            X = x;
-            Y = y;
+            Coordinate2D = new Primitives.Coordinate2D(x, y);
             CoordinateSystem = CoordinateSystem.None;
         }
 
@@ -41,15 +44,26 @@ namespace SmallGeometry.Euclidean
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="coordinateSystem"></param>
-        /// <exception cref="ArgumentException">coordinateSystem is invalid</exception>
+        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
         public FlatPoint(double x, double y, CoordinateSystem coordinateSystem)
             : this(x, y)
         {
             if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
             {
-                throw new ArgumentException("coordinateSystem must be flat.");
+                throw new NotSupportedException("Coordinate system must be flat.");
             }
             CoordinateSystem = coordinateSystem;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="coordinate2D"></param>
+        /// <param name="coordinateSystem"></param>
+        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
+        internal FlatPoint(Primitives.Coordinate2D coordinate2D, CoordinateSystem coordinateSystem)
+            : this(coordinate2D.X, coordinate2D.Y, coordinateSystem)
+        {
         }
 
         /// <summary>
@@ -69,6 +83,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="coordinateSystem"></param>
         /// <param name="result"></param>
         /// <returns></returns>
+        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
         public static bool TryParse(string point, CoordinateSystem coordinateSystem, [NotNullWhen(true)] out FlatPoint? result)
         {
             try
@@ -150,59 +165,30 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public static double GetDistance(FlatPoint a, FlatPoint b)
         {
-            double diffX;
-            double diffY;
-            if (a.CoordinateSystem == b.CoordinateSystem)
-            {
-                diffX = a.X - b.X;
-                diffY = a.Y - b.Y;
-            }
-            else
-            {
-                FlatPoint bTrans = Transformer.TransformToFlat(b, a.CoordinateSystem);
-                diffX = a.X - bTrans.X;
-                diffY = a.Y - bTrans.Y;
-            }
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(a, b);
+
+            double diffX = a.X - b.X;
+            double diffY = a.Y - b.Y;
 
             return Math.Sqrt((diffX * diffX) + (diffY * diffY));
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="targetCoordinateSystem"></param>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <inheritdoc cref="Transformer.TransformToFlat(FlatPoint, CoordinateSystem)"/>
         public readonly FlatPoint Transform(CoordinateSystem targetCoordinateSystem)
         {
             return Transformer.TransformToFlat(this, targetCoordinateSystem);
         }
 
-        /// <summary>
-        /// Transforms to GeoPoint
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <inheritdoc cref="Transformer.TransformToGeoPoint(FlatPoint)"/>
         public readonly Geographic.GeoPoint TransformToGeoPoint()
         {
             return Transformer.TransformToGeoPoint(this);
         }
 
-        /// <summary>
-        /// Gets Euclidean distance.
-        /// </summary>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <inheritdoc cref=" GetDistance(FlatPoint, FlatPoint)"/>
         public readonly double GetDistance(FlatPoint b)
         {
             return GetDistance(this, b);

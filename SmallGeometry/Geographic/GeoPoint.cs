@@ -17,26 +17,26 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// East-West(X), [-180,180]
         /// </summary>
-        public readonly double Longitude => _x;
+        public readonly double Longitude => X;
         /// <summary>
         /// North-South(Y), [-90,90]
         /// </summary>
-        public readonly double Latitude => _y;
+        public readonly double Latitude => Y;
 
         /// <summary>
         /// Same to longitude
         /// </summary>
         [JsonIgnore]
-        public readonly double X => _x;
+        public readonly double X => Coordinate2D.X;
         /// <summary>
         /// Same to latitude
         /// </summary>
         [JsonIgnore]
-        public readonly double Y => _y;
+        public readonly double Y => Coordinate2D.Y;
 
 
-        private readonly double _x;
-        private readonly double _y;
+        internal Primitives.Coordinate2D Coordinate2D { get; }
+
 
 
         /// <summary>
@@ -72,8 +72,7 @@ namespace SmallGeometry.Geographic
             }
             else
             {
-                _x = longitude;
-                _y = latitude;
+                Coordinate2D = new Primitives.Coordinate2D(longitude, latitude);
             }
         }
 
@@ -83,8 +82,16 @@ namespace SmallGeometry.Geographic
         /// <param name="source"></param>
         public GeoPoint(GeoPoint source)
         {
-            _x = source._x;
-            _y = source._y;
+            Coordinate2D = new Primitives.Coordinate2D(source.Longitude, source.Latitude);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="coordinate2D"></param>
+        internal GeoPoint(Primitives.Coordinate2D coordinate2D)
+        {
+            Coordinate2D = coordinate2D;
         }
 
 
@@ -224,13 +231,13 @@ namespace SmallGeometry.Geographic
         /// <inheritdoc cref="IPosition2D.GetHashCode(double, double)"/>
         public readonly override int GetHashCode()
         {
-            return IPosition2D.GetHashCode(_x, _y);
+            return IPosition2D.GetHashCode(X, Y);
         }
 
         /// <inheritdoc cref="IPosition2D.ToString(double, double)"/>
         public readonly override string ToString()
         {
-            return IPosition2D.ToString(_x, _y);
+            return IPosition2D.ToString(X, Y);
         }
     }
 }

@@ -1,15 +1,30 @@
 ﻿using System.Diagnostics;
 
+using SmallGeometry.Exceptions;
+
 namespace SmallGeometry.Euclidean
 {
     /// <summary>
     /// Finite line segment.
     /// </summary>
-    public class FlatLineSegment
+    public class FlatLineSegment : Interfaces.ISridCoordinate
     {
-        public CoordinateSystem CoordinateSystem => Start.CoordinateSystem;
-        public FlatPoint Start { get; }
-        public FlatPoint End { get; }
+        /// <summary>
+        /// Coordinate system of this segment.
+        /// </summary>
+        public CoordinateSystem CoordinateSystem { get; }
+        /// <summary>
+        /// Start coordinate of this segment.
+        /// </summary>
+        public FlatPoint Start => new FlatPoint(StartCoordinate, CoordinateSystem);
+        /// <summary>
+        /// End coordinate of this segment.
+        /// </summary>
+        public FlatPoint End => new FlatPoint(EndCoordinate, CoordinateSystem);
+
+
+        private Primitives.Coordinate2D StartCoordinate { get; }
+        private Primitives.Coordinate2D EndCoordinate { get; }
 
 
         /// <summary>
@@ -17,12 +32,14 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public FlatLineSegment(FlatPoint start, FlatPoint end)
         {
-            Start = start;
-            End = Transformer.TransformToFlat(end, start.CoordinateSystem);
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(start, end);
+            CoordinateSystem = start.CoordinateSystem;
+
+            StartCoordinate = start.Coordinate2D;
+            EndCoordinate = end.Coordinate2D;
         }
 
 
@@ -40,22 +57,12 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">this is none XOR p is none</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public FlatPoint GetNearestPointTo(FlatPoint p)
         {
-            FlatPoint pTrans;
-            if (CoordinateSystem == CoordinateSystem.None
-                && p.CoordinateSystem == CoordinateSystem.None)
-            {
-                pTrans = p;
-            }
-            else
-            {
-                pTrans = Transformer.TransformToFlat(p, CoordinateSystem);
-            }
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, p);
 
-            var startToP = new Vector(Start, pTrans);
+            var startToP = new Vector(Start, p);
             var startToEnd = new Vector(Start, End);
 
             // Distance from Start to the perpendicular foot.
@@ -83,11 +90,12 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">when aStart is none xor bStart is none</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public FlatPoint? FindIntersectingPointOrNull(FlatLineSegment b)
         {
             ArgumentNullException.ThrowIfNull(b);
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, b);
+
             Vector A = this.GetVector();
             Vector B = b.GetVector();
 
