@@ -3,12 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 
 using SmallGeometry.Interfaces;
 
-namespace SmallGeometry.Euclidean
+namespace SmallGeometry.Primitives
 {
     /// <summary>
-    /// Vector on flat plane space.
+    /// Vector
     /// </summary>
-    public readonly struct Vector : IPosition2D
+    public readonly struct Vector2D : IPosition2D
     {
         /// <summary>
         /// 
@@ -27,19 +27,19 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// Zero vector
         /// </summary>
-        public static readonly Vector Zero = new Vector(0, 0);
+        public static readonly Vector2D Zero = new Vector2D(0, 0);
 
 
         /// <summary>
-        /// <inheritdoc cref="Vector"/>
+        /// <inheritdoc cref="Vector2D"/>
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public Vector(double x, double y)
+        public Vector2D(double x, double y)
         {
             X = x;
             Y = y;
-            Size = Math.Sqrt((x * x) + (y * y));
+            Size = Math.Sqrt(x * x + y * y);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public Vector(FlatPoint from, FlatPoint to)
+        public Vector2D(IPosition2D from, IPosition2D to)
             : this(to.X - from.X, to.Y - from.Y)
         {
         }
@@ -56,7 +56,7 @@ namespace SmallGeometry.Euclidean
         /// Get unit vector of heading.
         /// </summary>
         /// <param name="heading">360 degree clockwise, 0 = y+ axis</param>
-        public Vector(double heading)
+        public Vector2D(double heading)
         {
             double headingInRange = heading;
 
@@ -76,14 +76,14 @@ namespace SmallGeometry.Euclidean
 
             X = x;
             Y = y;
-            Size = Math.Sqrt((x * x) + (y * y));
+            Size = Math.Sqrt(x * x + y * y);
         }
 
         /// <summary>
         /// Copy constructor
         /// </summary>
         /// <param name="source"></param>
-        public Vector(Vector source)
+        public Vector2D(Vector2D source)
             : this(source.X, source.Y)
         {
         }
@@ -95,11 +95,11 @@ namespace SmallGeometry.Euclidean
         /// <param name="vector"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryParse(string vector, [NotNullWhen(true)] out Vector? result)
+        public static bool TryParse(string vector, [NotNullWhen(true)] out Vector2D? result)
         {
             try
             {
-                char[] trimChar = [ '(', ')', '[', ']', ',' ];
+                char[] trimChar = ['(', ')', '[', ']', ','];
                 string[] xy = vector.Split(',');
 
                 if (xy.Length == 2)
@@ -107,7 +107,7 @@ namespace SmallGeometry.Euclidean
                     if (double.TryParse(xy[0].Trim().Trim(trimChar), out double x)
                         && double.TryParse(xy[1].Trim().Trim(trimChar), out double y))
                     {
-                        result = new Vector(x, y);
+                        result = new Vector2D(x, y);
                         return true;
                     }
                 }
@@ -127,10 +127,10 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator ==(Vector a, Vector b)
+        public static bool operator ==(Vector2D a, Vector2D b)
         {
-            return (a.X == b.X)
-                && (a.Y == b.Y);
+            return a.X == b.X
+                && a.Y == b.Y;
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator !=(Vector a, Vector b)
+        public static bool operator !=(Vector2D a, Vector2D b)
         {
             return !(a == b);
         }
@@ -149,7 +149,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        public static Vector operator +(Vector a)
+        public static Vector2D operator +(Vector2D a)
         {
             return a;
         }
@@ -159,9 +159,9 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        public static Vector operator -(Vector a)
+        public static Vector2D operator -(Vector2D a)
         {
-            return new Vector(-a.X, -a.Y);
+            return new Vector2D(-a.X, -a.Y);
         }
 
         /// <summary>
@@ -170,9 +170,9 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Vector operator +(Vector a, Vector b)
+        public static Vector2D operator +(Vector2D a, Vector2D b)
         {
-            return new Vector(a.X + b.X, a.Y + b.Y);
+            return new Vector2D(a.X + b.X, a.Y + b.Y);
         }
 
         /// <summary>
@@ -181,9 +181,9 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Vector operator -(Vector a, Vector b)
+        public static Vector2D operator -(Vector2D a, Vector2D b)
         {
-            return a + (-b);
+            return a + -b;
         }
 
         /// <summary>
@@ -192,9 +192,9 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static Vector operator *(double a, Vector v)
+        public static Vector2D operator *(double a, Vector2D v)
         {
-            return new Vector(a * v.X, a * v.Y);
+            return new Vector2D(a * v.X, a * v.Y);
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="v"></param>
         /// <param name="a"></param>
         /// <returns></returns>
-        public static Vector operator *(Vector v, double a)
+        public static Vector2D operator *(Vector2D v, double a)
         {
             return a * v;
         }
@@ -215,14 +215,14 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <returns></returns>
         /// <exception cref="DivideByZeroException"></exception>
-        public static Vector operator /(Vector v, double a)
+        public static Vector2D operator /(Vector2D v, double a)
         {
             if (a == 0)
             {
                 throw new DivideByZeroException();
             }
 
-            return new Vector(v.X / a, v.Y / a);
+            return new Vector2D(v.X / a, v.Y / a);
         }
 
 
@@ -232,7 +232,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static double InnerProduct(Vector a, Vector b)
+        public static double InnerProduct(Vector2D a, Vector2D b)
         {
             double term1 = a.X * b.X;
             double term2 = a.Y * b.Y;
@@ -245,7 +245,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static double CrossProduct(Vector a, Vector b)
+        public static double CrossProduct(Vector2D a, Vector2D b)
         {
             double term1 = a.X * b.Y;
             double term2 = a.Y * b.X;
@@ -260,7 +260,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="toleranceInDegree"></param>
         /// <returns></returns>
         /// <remarks>Zero vector results in true.</remarks>
-        public static bool IsParallel(Vector a, Vector b, double toleranceInDegree)
+        public static bool IsParallel(Vector2D a, Vector2D b, double toleranceInDegree)
         {
             double cp = CrossProduct(a, b); // going 0 when parallel
             double sm = a.Size * b.Size;
@@ -278,7 +278,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <returns></returns>
         /// <remarks>Zero vector results in true.</remarks>
-        public static bool IsParallel(Vector a, Vector b)
+        public static bool IsParallel(Vector2D a, Vector2D b)
         {
             return IsParallel(a, b, 0.001);
         }
@@ -291,7 +291,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="toleranceInDegree"></param>
         /// <returns></returns>
         /// <remarks>Zero vector results in true.</remarks>
-        public static bool IsOrthogonal(Vector a, Vector b, double toleranceInDegree)
+        public static bool IsOrthogonal(Vector2D a, Vector2D b, double toleranceInDegree)
         {
             double ip = InnerProduct(a, b); // going 0 when orthogonal
             double sm = a.Size * b.Size;
@@ -309,7 +309,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <returns></returns>
         /// <remarks>Zero vector results in true.</remarks>
-        public static bool IsOrthogonal(Vector a, Vector b)
+        public static bool IsOrthogonal(Vector2D a, Vector2D b)
         {
             return IsOrthogonal(a, b, 0.001);
         }
@@ -321,7 +321,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="b"></param>
         /// <returns>smaller angle between a and b</returns>
         /// <remarks>Zero vector results 0</remarks>
-        public static double GetAngleDegree(Vector a, Vector b)
+        public static double GetAngleDegree(Vector2D a, Vector2D b)
         {
             if (a == Zero || b == Zero)
             {
@@ -334,8 +334,8 @@ namespace SmallGeometry.Euclidean
             return UnitConverter.RadianToDegree(radian);
         }
 
-        /// <inheritdoc cref="GetAngleDegree(Vector, Vector)"/>
-        public readonly double GetAngleDegree(Vector b)
+        /// <inheritdoc cref="GetAngleDegree(Vector2D, Vector2D)"/>
+        public readonly double GetAngleDegree(Vector2D b)
         {
             return GetAngleDegree(this, b);
         }
@@ -345,10 +345,10 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="degree"></param>
         /// <returns></returns>
-        public Vector GetRotatedVector(double degree)
+        public Vector2D GetRotatedVector(double degree)
         {
-            double currentDegree = GetAngleDegree(new Vector(0, 1));
-            return new Vector(currentDegree + degree);
+            double currentDegree = GetAngleDegree(new Vector2D(0, 1));
+            return new Vector2D(currentDegree + degree);
         }
 
         /// <summary>
@@ -358,8 +358,8 @@ namespace SmallGeometry.Euclidean
         /// <remarks>Zero vector results in false.</remarks>
         public readonly bool IsRightwardDirected()
         {
-            return (X > 0)
-                || (X == 0 && Y > 0);
+            return X > 0
+                || X == 0 && Y > 0;
         }
 
         /// <summary>
@@ -367,7 +367,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns></returns>
         /// <remarks>Zero vector results in zero vector.</remarks>
-        public readonly Vector GetNormalizedVector()
+        public readonly Vector2D GetNormalizedVector()
         {
             if (this == Zero)
             {
@@ -384,9 +384,9 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <returns></returns>
         /// <remarks>Zero vector results in zero vector.</remarks>
-        public readonly Vector GetRightwardFlippedVector()
+        public readonly Vector2D GetRightwardFlippedVector()
         {
-            if (this.IsRightwardDirected())
+            if (IsRightwardDirected())
             {
                 return this;
             }
@@ -403,9 +403,9 @@ namespace SmallGeometry.Euclidean
         /// <remarks>Zero vector returns 0</remarks>
         public readonly double GetHeading()
         {
-            var north = new Vector(0, 1);
+            var north = new Vector2D(0, 1);
 
-            Vector norm = this.GetNormalizedVector();
+            Vector2D norm = GetNormalizedVector();
             double northInnerProduct = InnerProduct(north, norm);
             Debug.Assert(northInnerProduct <= 1);
             Debug.Assert(northInnerProduct >= -1);
@@ -431,13 +431,13 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {
                 return false;
             }
-            else if (obj is Vector b)
+            else if (obj is Vector2D b)
             {
                 return this == b;
             }

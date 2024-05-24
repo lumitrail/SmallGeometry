@@ -48,11 +48,11 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// X-axis interval
         /// </summary>
-        private Interval IntervalX { get; }
+        private Interval2D IntervalX { get; }
         /// <summary>
         /// Y-axis interval
         /// </summary>
-        private Interval IntervalY { get; }
+        private Interval2D IntervalY { get; }
 
 
         /// <summary>
@@ -64,8 +64,8 @@ namespace SmallGeometry.Geographic
         /// <param name="latitude2"></param>
         public GeoBoundingBox(double longitude1, double longitude2, double latitude1, double latitude2)
         {
-            IntervalX = new Interval(longitude1, longitude2);
-            IntervalY = new Interval(latitude1, latitude2);
+            IntervalX = new Interval2D(longitude1, longitude2);
+            IntervalY = new Interval2D(latitude1, latitude2);
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace SmallGeometry.Geographic
         /// <param name="p2"></param>
         public GeoBoundingBox(GeoPoint p1, GeoPoint p2)
         {
-            IntervalX = new Interval(p1.Longitude, p2.Longitude);
-            IntervalY = new Interval(p1.Latitude, p2.Latitude);
+            IntervalX = new Interval2D(p1.Longitude, p2.Longitude);
+            IntervalY = new Interval2D(p1.Latitude, p2.Latitude);
         }
 
         /// <summary>
@@ -118,11 +118,11 @@ namespace SmallGeometry.Geographic
                 ymax = Math.Max(ymax, p.Latitude);
             }
 
-            IntervalX = new Interval(xmin, xmax);
-            IntervalY = new Interval(ymin, ymax);
+            IntervalX = new Interval2D(xmin, xmax);
+            IntervalY = new Interval2D(ymin, ymax);
         }
 
-        private GeoBoundingBox(Interval intervalX, Interval intervalY)
+        private GeoBoundingBox(Interval2D intervalX, Interval2D intervalY)
         {
             IntervalX = intervalX;
             IntervalY = intervalY;
@@ -148,8 +148,8 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public GeoBoundingBox GetPaddedCopy(double xPadding, double yPadding)
         {
-            var intervalX = new Interval(Right + xPadding, Left - xPadding);
-            var intervalY = new Interval(Top + yPadding, Bottom - yPadding);
+            var intervalX = new Interval2D(Right + xPadding, Left - xPadding);
+            var intervalY = new Interval2D(Top + yPadding, Bottom - yPadding);
 
             return new GeoBoundingBox(intervalX, intervalY);
         }
@@ -204,7 +204,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">targetCoordinateSystem must be flat</exception>
+        /// <exception cref="NotSupportedException">targetCoordinateSystem is not flat</exception>
         /// <exception cref="TransformException"></exception>
         public Euclidean.FlatBoundingBox TransformToFlatBoundingBox(CoordinateSystem targetCoordinateSystem)
         {

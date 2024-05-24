@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 using SmallGeometry.Interfaces;
 
@@ -27,15 +28,12 @@ namespace SmallGeometry.Geographic
         /// Same to longitude
         /// </summary>
         [JsonIgnore]
-        public readonly double X => Coordinate2D.X;
+        public readonly double X { get; }
         /// <summary>
         /// Same to latitude
         /// </summary>
         [JsonIgnore]
-        public readonly double Y => Coordinate2D.Y;
-
-
-        internal Primitives.Coordinate2D Coordinate2D { get; }
+        public readonly double Y { get; }
 
 
 
@@ -72,7 +70,8 @@ namespace SmallGeometry.Geographic
             }
             else
             {
-                Coordinate2D = new Primitives.Coordinate2D(longitude, latitude);
+                X = longitude;
+                Y = latitude;
             }
         }
 
@@ -82,17 +81,10 @@ namespace SmallGeometry.Geographic
         /// <param name="source"></param>
         public GeoPoint(GeoPoint source)
         {
-            Coordinate2D = new Primitives.Coordinate2D(source.Longitude, source.Latitude);
+            X = source.X;
+            Y = source.Y;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="coordinate2D"></param>
-        internal GeoPoint(Primitives.Coordinate2D coordinate2D)
-        {
-            Coordinate2D = coordinate2D;
-        }
 
 
         /// <summary>
@@ -212,7 +204,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {

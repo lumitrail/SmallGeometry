@@ -2,6 +2,7 @@
 
 using SmallGeometry.Interfaces;
 using SmallGeometry.Exceptions;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry.Euclidean
 {
@@ -17,14 +18,12 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// 
         /// </summary>
-        public readonly double X => Coordinate2D.X;
+        public readonly double X { get; }
         /// <summary>
         /// 
         /// </summary>
-        public readonly double Y => Coordinate2D.Y;
+        public readonly double Y { get; }
 
-
-        internal Primitives.Coordinate2D Coordinate2D { get; }
 
 
         /// <summary>
@@ -34,7 +33,8 @@ namespace SmallGeometry.Euclidean
         /// <param name="y"></param>
         public FlatPoint(double x, double y)
         {
-            Coordinate2D = new Primitives.Coordinate2D(x, y);
+            X = x;
+            Y = y;
             CoordinateSystem = CoordinateSystem.None;
         }
 
@@ -56,18 +56,7 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="coordinate2D"></param>
-        /// <param name="coordinateSystem"></param>
-        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
-        internal FlatPoint(Primitives.Coordinate2D coordinate2D, CoordinateSystem coordinateSystem)
-            : this(coordinate2D.X, coordinate2D.Y, coordinateSystem)
-        {
-        }
-
-        /// <summary>
-        /// Copy
+        /// Copy constructor.
         /// </summary>
         /// <param name="a"></param>
         public FlatPoint(FlatPoint a)
@@ -125,7 +114,7 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
-        /// Points are not the same.
+        /// Points are not the including coordinate system.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -142,7 +131,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="p"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static FlatPoint operator +(FlatPoint p, Vector v)
+        public static FlatPoint operator +(FlatPoint p, Vector2D v)
         {
             return new FlatPoint(p.X + v.X, p.Y + v.Y, p.CoordinateSystem);
         }
@@ -153,7 +142,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="p"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static FlatPoint operator -(FlatPoint p, Vector v)
+        public static FlatPoint operator -(FlatPoint p, Vector2D v)
         {
             return p + (-v);
         }
@@ -217,7 +206,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {

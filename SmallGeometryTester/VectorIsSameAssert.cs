@@ -1,4 +1,6 @@
-﻿namespace SmallGeometryTester
+﻿using SmallGeometry.Primitives;
+
+namespace SmallGeometryTester
 {
     static class VectorIsSameAssert
     {
@@ -10,7 +12,7 @@
         };
 
 
-        public static void IsSameAssert(Vector a, Vector b)
+        public static void IsSameAssert(Vector2D a, Vector2D b)
         {
             Assert.True(VectorComparer.IsSame(a, b));
         }

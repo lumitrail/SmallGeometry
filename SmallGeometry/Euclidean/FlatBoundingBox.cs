@@ -48,45 +48,13 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// X-axis interval
         /// </summary>
-        private Interval IntervalX { get; }
+        private Interval2D IntervalX { get; }
         /// <summary>
         /// Y-axis interval
         /// </summary>
-        private Interval IntervalY { get; }
+        private Interval2D IntervalY { get; }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="coordinate2Ds"></param>
-        /// <param name="coordinateSystem"></param>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="NotSupportedException">coordinateSystem must be flat</exception>
-        internal FlatBoundingBox(IEnumerable<Coordinate2D> coordinate2Ds, CoordinateSystem coordinateSystem)
-        {
-            ArgumentNullException.ThrowIfNull(coordinate2Ds);
-            if (!coordinate2Ds.Any())
-            {
-                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(coordinate2Ds));
-            }
-            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
-            {
-                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + coordinateSystem);
-            }
-
-            CoordinateSystem = coordinateSystem;
-            IntervalX = new Interval(coordinate2Ds.Select(c => c.X));
-            IntervalY = new Interval(coordinate2Ds.Select(c => c.Y));
-        }
-
-        /// <inheritdoc cref="FlatBoundingBox.FlatBoundingBox(IEnumerable{Coordinate2D}, CoordinateSystem)"/>
-        /// <param name="coordinateSystem"></param>
-        /// <param name="coordinate2Ds"></param>
-        internal FlatBoundingBox(CoordinateSystem coordinateSystem, params Coordinate2D[] coordinate2Ds)
-            : this(coordinate2Ds.AsEnumerable(), coordinateSystem)
-        {
-        }
 
         /// <summary>
         /// Smallest bounding box containing all the points.
@@ -112,8 +80,8 @@ namespace SmallGeometry.Euclidean
             }
             
             CoordinateSystem = points.First().CoordinateSystem;
-            IntervalX = new Interval(points.Select(p => p.X));
-            IntervalY = new Interval(points.Select(p => p.Y));
+            IntervalX = new Interval2D(points.Select(p => p.X));
+            IntervalY = new Interval2D(points.Select(p => p.Y));
         }
 
         /// <inheritdoc cref="FlatBoundingBox.FlatBoundingBox(IEnumerable{FlatPoint})"/>
@@ -144,7 +112,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="intervalY"></param>
         /// <param name="coordinateSystem"></param>
         /// <exception cref="NotSupportedException"></exception>
-        internal FlatBoundingBox(Interval intervalX, Interval intervalY, CoordinateSystem coordinateSystem)
+        internal FlatBoundingBox(Interval2D intervalX, Interval2D intervalY, CoordinateSystem coordinateSystem)
         {
             if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
             {
@@ -157,7 +125,7 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
-        /// Copy constructor
+        /// Deep copy constructor
         /// </summary>
         /// <param name="b"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -180,8 +148,8 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         public FlatBoundingBox GetPaddedCopy(double xPadding, double yPadding)
         {
-            var intervalX = new Interval(Right + xPadding, Left - xPadding);
-            var intervalY = new Interval(Top + yPadding, Bottom - yPadding);
+            var intervalX = new Interval2D(Right + xPadding, Left - xPadding);
+            var intervalY = new Interval2D(Top + yPadding, Bottom - yPadding);
 
             return new FlatBoundingBox(intervalX, intervalY, CoordinateSystem);
         }
@@ -292,8 +260,8 @@ namespace SmallGeometry.Euclidean
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, b);
             
             return new FlatBoundingBox(
-                Interval.Union(this.IntervalX, b.IntervalX),
-                Interval.Union(this.IntervalY, b.IntervalY),
+                Interval2D.Union(this.IntervalX, b.IntervalX),
+                Interval2D.Union(this.IntervalY, b.IntervalY),
                 CoordinateSystem);
         }
 

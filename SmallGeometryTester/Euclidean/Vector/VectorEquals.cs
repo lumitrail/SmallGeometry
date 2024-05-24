@@ -1,9 +1,11 @@
-﻿namespace SmallGeometryTester
+﻿using SmallGeometry.Primitives;
+
+namespace SmallGeometryTester
 {
     public class VectorEquals
     {
-        Vector Vector1 => new Vector(1.05, -1.05);
-        Vector Zero => new Vector(0, 0);
+        Vector2D Vector1 => new Vector2D(1.05, -1.05);
+        Vector2D Zero => new Vector2D(0, 0);
 
         [Fact]
         public void WithNull()
@@ -26,8 +28,8 @@
         [Fact]
         public void WithSameVector()
         {
-            Vector v1 = Vector1;
-            Vector v2 = Vector1;
+            Vector2D v1 = Vector1;
+            Vector2D v2 = Vector1;
 
             Assert.True(v1.Equals(v1));
             Assert.True(v1.Equals(v2));

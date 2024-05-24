@@ -1,5 +1,6 @@
 ﻿using SmallGeometry.Euclidean;
 using SmallGeometry.Geographic;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry
 {
@@ -45,13 +46,13 @@ namespace SmallGeometry
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public bool IsSame(Vector a, Vector b)
+        public bool IsSame(Vector2D a, Vector2D b)
         {
             if (a.Size == 0 && b.Size == 0)
             {
                 return true;
             }
-            else if (Vector.IsParallel(a, b, DegreeErrorTolerance))
+            else if (Vector2D.IsParallel(a, b, DegreeErrorTolerance))
             {
                 double sizeDiff = Math.Abs(a.Size - b.Size);
                 double longerOne = Math.Max(a.Size, b.Size);

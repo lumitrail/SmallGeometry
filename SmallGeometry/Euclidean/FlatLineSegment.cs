@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 using SmallGeometry.Exceptions;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry.Euclidean
 {
@@ -16,15 +17,12 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// Start coordinate of this segment.
         /// </summary>
-        public FlatPoint Start => new FlatPoint(StartCoordinate, CoordinateSystem);
+        public FlatPoint Start { get; }
         /// <summary>
         /// End coordinate of this segment.
         /// </summary>
-        public FlatPoint End => new FlatPoint(EndCoordinate, CoordinateSystem);
+        public FlatPoint End { get; }
 
-
-        private Primitives.Coordinate2D StartCoordinate { get; }
-        private Primitives.Coordinate2D EndCoordinate { get; }
 
 
         /// <summary>
@@ -38,8 +36,8 @@ namespace SmallGeometry.Euclidean
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(start, end);
             CoordinateSystem = start.CoordinateSystem;
 
-            StartCoordinate = start.Coordinate2D;
-            EndCoordinate = end.Coordinate2D;
+            Start = start;
+            End = end;
         }
 
 
@@ -47,9 +45,9 @@ namespace SmallGeometry.Euclidean
         /// Gets a vector from Start to End.
         /// </summary>
         /// <returns></returns>
-        public Vector GetVector()
+        public Vector2D GetVector()
         {
-            return new Vector(Start, End);
+            return new Vector2D(Start, End);
         }
 
         /// <summary>
@@ -62,11 +60,11 @@ namespace SmallGeometry.Euclidean
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, p);
 
-            var startToP = new Vector(Start, p);
-            var startToEnd = new Vector(Start, End);
+            var startToP = new Vector2D(Start, p);
+            var startToEnd = new Vector2D(Start, End);
 
             // Distance from Start to the perpendicular foot.
-            double h = Vector.InnerProduct(startToP, startToEnd) / startToEnd.Size;
+            double h = Vector2D.InnerProduct(startToP, startToEnd) / startToEnd.Size;
 
             if (h <= 0)
             {
@@ -74,7 +72,7 @@ namespace SmallGeometry.Euclidean
             }
             else if (h < startToEnd.Size)
             {
-                Vector startToH = startToEnd.GetNormalizedVector() * h;
+                Vector2D startToH = startToEnd.GetNormalizedVector() * h;
                 FlatPoint H = Start + startToH;
                 return H;
             }
@@ -99,10 +97,10 @@ namespace SmallGeometry.Euclidean
             ArgumentNullException.ThrowIfNull(b);
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(a, b);
 
-            Vector A = a.GetVector();
-            Vector B = b.GetVector();
+            Vector2D A = a.GetVector();
+            Vector2D B = b.GetVector();
 
-            if (Vector.IsParallel(A, B))
+            if (Vector2D.IsParallel(A, B))
             {
                 return null;
             }
@@ -130,10 +128,10 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="ArgumentException">Line vector is zero</exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public static FlatPoint? FindIntersectingPointOrNull(
-            FlatPoint aStart, Vector A,
-            FlatPoint bStart, Vector B)
+            FlatPoint aStart, Vector2D A,
+            FlatPoint bStart, Vector2D B)
         {
-            if (Vector.IsParallel(A, B))
+            if (Vector2D.IsParallel(A, B))
             {
                 return null;
             }
@@ -145,7 +143,7 @@ namespace SmallGeometry.Euclidean
             return aStart + (k * A);
         }
 
-        /// <inheritdoc cref="FindIntersectingPointOrNull(FlatPoint, Vector, FlatPoint, Vector)"/>
+        /// <inheritdoc cref="FindIntersectingPointOrNull(FlatPoint, Vector2D, FlatPoint, Vector2D)"/>
         /// <param name="a1"></param>
         /// <param name="a2"></param>
         /// <param name="b1"></param>
@@ -154,8 +152,8 @@ namespace SmallGeometry.Euclidean
             FlatPoint a1, FlatPoint a2,
             FlatPoint b1, FlatPoint b2)
         {
-            Vector A = new Vector(a1, a2);
-            Vector B = new Vector(b1, b2);
+            Vector2D A = new Vector2D(a1, a2);
+            Vector2D B = new Vector2D(b1, b2);
 
             return FindIntersectingPointOrNull(a1, A, b1, B);
         }
@@ -171,11 +169,11 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="ArgumentException">Vector A and B are parallel(including Zero vector condition).</exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        private static double CalculateK(FlatPoint aStart, Vector A, FlatPoint bStart, Vector B)
+        private static double CalculateK(FlatPoint aStart, Vector2D A, FlatPoint bStart, Vector2D B)
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(aStart, bStart);
 
-            if (Vector.IsParallel(A, B))
+            if (Vector2D.IsParallel(A, B))
             {
                 throw new ArgumentException($"Vector A({nameof(A)} and B({nameof(B)}) are parallel.");
             }
