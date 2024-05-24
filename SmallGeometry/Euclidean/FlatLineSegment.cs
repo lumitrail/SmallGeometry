@@ -7,7 +7,7 @@ namespace SmallGeometry.Euclidean
     /// <summary>
     /// Finite line segment.
     /// </summary>
-    internal class FlatLineSegment : Interfaces.ISridCoordinate
+    public class FlatLineSegment : Interfaces.ISridCoordinate
     {
         /// <summary>
         /// Coordinate system of this segment.
@@ -84,19 +84,22 @@ namespace SmallGeometry.Euclidean
             }
         }
 
+
         /// <summary>
-        /// Finds intersection with b
+        /// Finds intersection between a and b.
         /// </summary>
+        /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        public FlatPoint? FindIntersectingPointOrNull(FlatLineSegment b)
+        public static FlatPoint? FindIntersectingPointOrNull(FlatLineSegment a, FlatLineSegment b)
         {
+            ArgumentNullException.ThrowIfNull(a);
             ArgumentNullException.ThrowIfNull(b);
-            CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, b);
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(a, b);
 
-            Vector A = this.GetVector();
+            Vector A = a.GetVector();
             Vector B = b.GetVector();
 
             if (Vector.IsParallel(A, B))
@@ -104,7 +107,7 @@ namespace SmallGeometry.Euclidean
                 return null;
             }
 
-            double k = CalculateK(Start, A, b.Start, B);
+            double k = CalculateK(a.Start, A, b.Start, B);
 
             if (k > 1 || k < 0)
             {
@@ -112,10 +115,9 @@ namespace SmallGeometry.Euclidean
             }
             else
             {
-                return Start + (k * A);
+                return a.Start + (k * A);
             }
         }
-
 
         /// <summary>
         /// Finds intersection of two infinite line, if they don't intersects, returns null.

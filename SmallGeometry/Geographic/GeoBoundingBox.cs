@@ -64,8 +64,8 @@ namespace SmallGeometry.Geographic
         /// <param name="latitude2"></param>
         public GeoBoundingBox(double longitude1, double longitude2, double latitude1, double latitude2)
         {
-            IntervalX = new Euclidean.Interval(longitude1, longitude2);
-            IntervalY = new Euclidean.Interval(latitude1, latitude2);
+            IntervalX = new Interval(longitude1, longitude2);
+            IntervalY = new Interval(latitude1, latitude2);
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace SmallGeometry.Geographic
         /// <param name="p2"></param>
         public GeoBoundingBox(GeoPoint p1, GeoPoint p2)
         {
-            IntervalX = new Euclidean.Interval(p1.Longitude, p2.Longitude);
-            IntervalY = new Euclidean.Interval(p1.Latitude, p2.Latitude);
+            IntervalX = new Interval(p1.Longitude, p2.Longitude);
+            IntervalY = new Interval(p1.Latitude, p2.Latitude);
         }
 
         /// <summary>
@@ -118,8 +118,8 @@ namespace SmallGeometry.Geographic
                 ymax = Math.Max(ymax, p.Latitude);
             }
 
-            IntervalX = new Euclidean.Interval(xmin, xmax);
-            IntervalY = new Euclidean.Interval(ymin, ymax);
+            IntervalX = new Interval(xmin, xmax);
+            IntervalY = new Interval(ymin, ymax);
         }
 
         private GeoBoundingBox(Interval intervalX, Interval intervalY)
@@ -148,8 +148,8 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public GeoBoundingBox GetPaddedCopy(double xPadding, double yPadding)
         {
-            var intervalX = new Euclidean.Interval(Right + xPadding, Left - xPadding);
-            var intervalY = new Euclidean.Interval(Top + yPadding, Bottom - yPadding);
+            var intervalX = new Interval(Right + xPadding, Left - xPadding);
+            var intervalY = new Interval(Top + yPadding, Bottom - yPadding);
 
             return new GeoBoundingBox(intervalX, intervalY);
         }
@@ -204,24 +204,24 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">targetCoordinateSystem is not flat</exception>
+        /// <exception cref="NotSupportedException">targetCoordinateSystem must be flat</exception>
         /// <exception cref="TransformException"></exception>
-        public Euclidean.BoundingBox TransformToFlatBoundingBox(CoordinateSystem targetCoordinateSystem)
+        public Euclidean.FlatBoundingBox TransformToFlatBoundingBox(CoordinateSystem targetCoordinateSystem)
         {
-            if (CoordinateSystemUtil.IsCoordinateSystemEllipsoidal(targetCoordinateSystem))
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
             {
-                throw new NotSupportedException(ExceptionMessages.CoordinateSystemDiscordant + targetCoordinateSystem);
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
             }
             else if (targetCoordinateSystem == CoordinateSystem.None)
             {
-                return new Euclidean.BoundingBox(Left, Right, Top, Bottom, CoordinateSystem.None);
+                return new Euclidean.FlatBoundingBox(Left, Right, Top, Bottom, CoordinateSystem.None);
             }
             else
             {
                 Euclidean.FlatPoint min = GetBottomLeft().Transform(targetCoordinateSystem);
                 Euclidean.FlatPoint max = GetTopRight().Transform(targetCoordinateSystem);
 
-                return new Euclidean.BoundingBox(min, max);
+                return new Euclidean.FlatBoundingBox(min, max);
             }
         }
 

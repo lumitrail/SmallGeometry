@@ -1,4 +1,7 @@
-﻿namespace SmallGeometry.Euclidean
+﻿using SmallGeometry.Exceptions;
+using SmallGeometry.Primitives;
+
+namespace SmallGeometry.Euclidean
 {
     /// <summary>
     /// Immutable line of FlatPoints.
@@ -16,22 +19,22 @@
         /// <param name="idx"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public FlatPoint this[int idx] => _points[idx];
+        public FlatPoint this[int idx] => new FlatPoint(Points[idx], CoordinateSystem);
 
         /// <summary>
         /// Number of points.
         /// </summary>
-        public int Count => _points.Count;
+        public int Count => Points.Count;
 
         /// <summary>
         /// 
         /// </summary>
-        public BoundingBox BoundingBox { get; }
+        public FlatBoundingBox BoundingBox { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public IReadOnlyList<FlatPoint> _points { get; }
+        private IReadOnlyList<Coordinate2D> Points { get; }
         private double _length = -1;
 
 
@@ -47,7 +50,7 @@
         public FlatLine(IEnumerable<FlatPoint> points)
         {
             ArgumentNullException.ThrowIfNull(points);
-
+            
             int pointsCount = points.Count();
             if (pointsCount == 0)
             {
@@ -55,14 +58,14 @@
             }
             else if (pointsCount == 1)
             {
-                _points = [points.First(), points.First()];
+                Points = [points.First().Coordinate2D, points.First().Coordinate2D];
             }
             else
             {
-                _points = HomogenizeCoordinateSystem(points);
+                Points = points.Select(p => p.Coordinate2D).ToList();
             }
-
-            BoundingBox = new BoundingBox(_points);
+            CoordinateSystem = points.First().CoordinateSystem;
+            BoundingBox = new FlatBoundingBox(Points, CoordinateSystem);
         }
 
         /// <inheritdoc cref="FlatLine.FlatLine(IEnumerable{FlatPoint})"/>
@@ -74,71 +77,7 @@
 
 
         #region Static functions
-        /// <summary>
-        /// Get a copy of line with same points follwing previous point removed.
-        /// </summary>
-        /// <param name="line"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">line is empty</exception>
-        /// <exception cref="ArgumentNullException">line is null</exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">points contains both None and else</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
-        public static List<FlatPoint> RemoveDuplicatedPoints(IEnumerable<FlatPoint> line)
-        {
-            IReadOnlyList<FlatPoint> transformed = HomogenizeCoordinateSystem(line);
-            var result = new List<FlatPoint>(transformed.Count)
-            {
-                transformed[0]
-            };
-
-            foreach (FlatPoint fp in transformed)
-            {
-                if (fp != result.Last())
-                {
-                    result.Add(fp);
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets intersections of lines.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
-        public static List<FlatPoint> GetIntersections(FlatLine a, FlatLine b)
-        {
-            ArgumentNullException.ThrowIfNull(a);
-            ArgumentNullException.ThrowIfNull(b);
-
-            FlatLine bTrans = new FlatLine(HomogenizeCoordinateSystem(b));
-
-            // Max possible result.Count is (a.Count * b.Count), but...
-            var result = new List<FlatPoint>(a.Count + bTrans.Count);
-
-            List<FlatLineSegment> aSegments = a.GetLineSegments();
-            List<FlatLineSegment> bSegments = bTrans.GetLineSegments();
-
-            foreach (var aSeg in aSegments)
-            {
-                foreach (var bSeg in bSegments)
-                {
-                    FlatPoint? intersection = aSeg.FindIntersectingPointOrNull(bSeg);
-
-                    if (intersection.HasValue)
-                    {
-                        result.Add(intersection.Value);
-                    }
-                }
-            }
-
-            return result;
-        }
+        
 
         /// <summary>
         /// Transform points into one coordinate system(To points.First()).
@@ -182,65 +121,7 @@
         #endregion
 
 
-
         #region Flat line alone
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="targetCoordinateSystem"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
-        public FlatLine GetTransformedFlatCopy(CoordinateSystem targetCoordinateSystem)
-        {
-            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
-            {
-                throw new ArgumentException(ExceptionMessages.CoordinateSystemMustBeFlat, nameof(targetCoordinateSystem));
-            }
-
-            FlatPoint first = _points[0].Transform(targetCoordinateSystem);
-            var newPoints = new List<FlatPoint>(Count)
-            {
-                first
-            };
-
-            for (int i=1; i<Count; ++i)
-            {
-                newPoints.Add(_points[i]);
-            }
-
-            // Constructor does the transformation.
-            return new FlatLine(newPoints);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        public Geographic.GeoLine GetGeoLine()
-        {
-            if (CoordinateSystem == CoordinateSystem.None)
-            {
-                throw new Exceptions.CoordinateSystemNoneException();
-            }
-
-            IEnumerable<Geographic.GeoPoint> geoPoints = _points.Select(p => p.TransformToGeoPoint());
-
-            return new Geographic.GeoLine(geoPoints);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public FlatLine GetReversedCopy()
-        {
-            var reversedPoints = new List<FlatPoint>(_points);
-            reversedPoints.Reverse();
-            return new FlatLine(reversedPoints);
-        }
-
         /// <summary>
         /// Gets Euclidean length.
         /// </summary>
@@ -252,14 +133,84 @@
                 _length = 0;
                 for (int i = 1; i < Count; ++i)
                 {
-                    _length += _points[i - 1].GetDistance(_points[i]);
+                    _length += this[i - 1].GetDistance(this[i]);
                 }
             }
 
             return _length;
         }
 
-        
+        /// <summary>
+        /// Gets line segments of the line.
+        /// </summary>
+        /// <returns></returns>
+        public List<FlatLineSegment> GetLineSegments()
+        {
+            var result = new List<FlatLineSegment>(Count - 1);
+
+            for (int i = 1; i < Count; ++i)
+            {
+                var s = new FlatLineSegment(this[i - 1], this[i]);
+                result.Add(s);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a line segment of 0-based index i.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public FlatLineSegment GetLineSegment(int i)
+        {
+            if (i < 0 || i >= Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(i));
+            }
+
+            return new FlatLineSegment(this[i], this[i - 1]);
+        }
+
+        /// <summary>
+        /// Get a copy of line with same points follwing previous point removed.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">line is empty</exception>
+        /// <exception cref="ArgumentNullException">line is null</exception>
+        /// <exception cref="Exceptions.CoordinateSystemNoneException">points contains both None and else</exception>
+        /// <exception cref="Exceptions.TransformException"></exception>
+        public static List<FlatPoint> RemoveDuplicatedPoints(IEnumerable<FlatPoint> line)
+        {
+            IReadOnlyList<FlatPoint> transformed = HomogenizeCoordinateSystem(line);
+            var result = new List<FlatPoint>(transformed.Count)
+            {
+                transformed[0]
+            };
+
+            foreach (FlatPoint fp in transformed)
+            {
+                if (fp != result.Last())
+                {
+                    result.Add(fp);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public FlatLine GetReversedCopy()
+        {
+            var reversedPoints = new List<FlatPoint>(this);
+            reversedPoints.Reverse();
+            return new FlatLine(reversedPoints);
+        }
 
         /// <summary>
         /// Copies this and generates flatpoints on the line so that distance between two consecutive points is no larger than maxDistance.
@@ -271,8 +222,8 @@
             int estimatedCount = (int)(GetLength() / maxDistance) + Count;
             var result = new List<FlatPoint>(estimatedCount);
 
-            FlatPoint previousPoint = _points[0];
-            foreach (FlatPoint p in _points)
+            FlatPoint previousPoint = this[0];
+            foreach (FlatPoint p in Points)
             {
                 double distance = previousPoint.GetDistance(p);
 
@@ -295,41 +246,7 @@
 
             return new FlatLine(result);
         }
-
-        /// <summary>
-        /// Gets line segments of the line.
-        /// </summary>
-        /// <returns></returns>
-        public List<FlatLineSegment> GetLineSegments()
-        {
-            var result = new List<FlatLineSegment>(Count - 1);
-
-            for (int i = 1; i < Count; ++i)
-            {
-                var s = new FlatLineSegment(_points[i - 1], _points[i]);
-                result.Add(s);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets a line segment of 0-based index i.
-        /// </summary>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public FlatLineSegment GetLineSegment(int i)
-        {
-            if (i < 0 || i >= Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(i));
-            }
-
-            return new FlatLineSegment(_points[i], _points[i - 1]);
-        }
         #endregion
-
 
 
         #region Flat line and point
@@ -338,7 +255,7 @@
         /// </summary>
         /// <param name="target"></param>
         /// <returns>key: 0-based index of line segment</returns>
-        /// <remarks>There can be multiple points when their distances to the line are exactly the same.</remarks>
+        /// <remarks>There can be multiple results when their distances to the line are exactly the same.</remarks>
         public List<KeyValuePair<int, FlatPoint>> GetNearestPoints(FlatPoint target)
         {
             double minDistance = double.MaxValue;
@@ -373,7 +290,8 @@
         /// Determins if target is on the right of the line segment nearest to it.
         /// </summary>
         /// <param name="target"></param>
-        /// <returns></returns>
+        /// <returns>key: 0-based index of line segment</returns>
+        /// <remarks>There can be multiple results when their distances to the line are exactly the same.</remarks>
         public List<KeyValuePair<int, bool>> IsPointOnTheRightSide(FlatPoint target)
         {
             List<KeyValuePair<int, FlatPoint>> nearestPoints = GetNearestPoints(target);
@@ -419,6 +337,44 @@
         #endregion
 
 
+        #region Line and line
+        /// <summary>
+        /// Gets intersections of lines.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
+        /// <exception cref="Exceptions.TransformException"></exception>
+        public static List<FlatPoint> GetIntersections(FlatLine a, FlatLine b)
+        {
+            ArgumentNullException.ThrowIfNull(a);
+            ArgumentNullException.ThrowIfNull(b);
+
+            FlatLine bTrans = new FlatLine(HomogenizeCoordinateSystem(b));
+
+            // Max possible result.Count is (a.Count * b.Count), but...
+            var result = new List<FlatPoint>(a.Count + bTrans.Count);
+
+            List<FlatLineSegment> aSegments = a.GetLineSegments();
+            List<FlatLineSegment> bSegments = bTrans.GetLineSegments();
+
+            foreach (var aSeg in aSegments)
+            {
+                foreach (var bSeg in bSegments)
+                {
+                    FlatPoint? intersection = aSeg.FindIntersectingPointOrNull(bSeg);
+
+                    if (intersection.HasValue)
+                    {
+                        result.Add(intersection.Value);
+                    }
+                }
+            }
+
+            return result;
+        }
 
 
         /// <inheritdoc cref="GetIntersections(FlatLine, FlatLine)"/>
@@ -426,6 +382,7 @@
         {
             return GetIntersections(this, b);
         }
+        #endregion
 
         /// <summary>
         /// [[x,y],[x,y],...,[x,y]]
@@ -433,7 +390,7 @@
         /// <returns></returns>
         public override string ToString()
         {
-            return $"[{string.Join(',', _points.Select(p => p.ToString()))}]";
+            return $"[{string.Join(',', Points.Select(p => p.ToString()))}]";
         }
 
         /// <summary>
@@ -442,12 +399,12 @@
         /// <returns></returns>
         public IEnumerator<FlatPoint> GetEnumerator()
         {
-            return _points.GetEnumerator();
+            return Points.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return _points.GetEnumerator();
+            return Points.GetEnumerator();
         }
     }
 }
