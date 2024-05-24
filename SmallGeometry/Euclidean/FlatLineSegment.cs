@@ -153,10 +153,13 @@ namespace SmallGeometry.Euclidean
         /// <param name="B"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">Vector A and B are parallel</exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         /// <exception cref="Exceptions.CoordinateSystemNoneException">when aStart is none xor bStart is none</exception>
         /// <exception cref="Exceptions.TransformException"></exception>
         private static double CalculateK(FlatPoint aStart, Vector A, FlatPoint bStart, Vector B)
         {
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(aStart, bStart);
+
             if (Vector.IsParallel(A, B))
             {
                 throw new ArgumentException($"Vector A({nameof(A)} and B({nameof(B)}) are parallel.");
