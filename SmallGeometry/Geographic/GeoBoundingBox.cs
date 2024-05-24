@@ -2,6 +2,7 @@
 
 using SmallGeometry.Exceptions;
 using SmallGeometry.Interfaces;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry.Geographic
 {
@@ -47,11 +48,11 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// X-axis interval
         /// </summary>
-        private Euclidean.Interval IntervalX { get; }
+        private Interval IntervalX { get; }
         /// <summary>
         /// Y-axis interval
         /// </summary>
-        private Euclidean.Interval IntervalY { get; }
+        private Interval IntervalY { get; }
 
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace SmallGeometry.Geographic
             IntervalY = new Euclidean.Interval(ymin, ymax);
         }
 
-        private GeoBoundingBox(Euclidean.Interval intervalX, Euclidean.Interval intervalY)
+        private GeoBoundingBox(Interval intervalX, Interval intervalY)
         {
             IntervalX = intervalX;
             IntervalY = intervalY;

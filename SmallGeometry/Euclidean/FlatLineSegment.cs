@@ -7,7 +7,7 @@ namespace SmallGeometry.Euclidean
     /// <summary>
     /// Finite line segment.
     /// </summary>
-    public class FlatLineSegment : Interfaces.ISridCoordinate
+    internal class FlatLineSegment : Interfaces.ISridCoordinate
     {
         /// <summary>
         /// Coordinate system of this segment.
@@ -125,8 +125,8 @@ namespace SmallGeometry.Euclidean
         /// <param name="bStart"></param>
         /// <param name="B"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">when aStart is none xor bStart is none</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <exception cref="ArgumentException">Line vector is zero</exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public static FlatPoint? FindIntersectingPointOrNull(
             FlatPoint aStart, Vector A,
             FlatPoint bStart, Vector B)
@@ -143,6 +143,21 @@ namespace SmallGeometry.Euclidean
             return aStart + (k * A);
         }
 
+        /// <inheritdoc cref="FindIntersectingPointOrNull(FlatPoint, Vector, FlatPoint, Vector)"/>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        /// <param name="b1"></param>
+        /// <param name="b2"></param>
+        public static FlatPoint? FindIntersectingPointOrNull(
+            FlatPoint a1, FlatPoint a2,
+            FlatPoint b1, FlatPoint b2)
+        {
+            Vector A = new Vector(a1, a2);
+            Vector B = new Vector(b1, b2);
+
+            return FindIntersectingPointOrNull(a1, A, b1, B);
+        }
+
 
         /// <summary>
         /// Finding k
@@ -152,10 +167,8 @@ namespace SmallGeometry.Euclidean
         /// <param name="bStart"></param>
         /// <param name="B"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException">Vector A and B are parallel</exception>
+        /// <exception cref="ArgumentException">Vector A and B are parallel(including Zero vector condition).</exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">when aStart is none xor bStart is none</exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
         private static double CalculateK(FlatPoint aStart, Vector A, FlatPoint bStart, Vector B)
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(aStart, bStart);
@@ -164,13 +177,11 @@ namespace SmallGeometry.Euclidean
             {
                 throw new ArgumentException($"Vector A({nameof(A)} and B({nameof(B)}) are parallel.");
             }
-
-            FlatPoint bStartTrans = bStart.Transform(aStart.CoordinateSystem);
             
             if (A.X != 0 && B.Y != 0)
             {
-                double dx = aStart.X - bStartTrans.X;
-                double dy = aStart.Y - bStartTrans.Y;
+                double dx = aStart.X - bStart.X;
+                double dy = aStart.Y - bStart.Y;
 
                 return ((dx / B.X) - (dy / B.Y)) / ((A.Y / B.Y) - (A.X / B.X));
             }
@@ -178,13 +189,13 @@ namespace SmallGeometry.Euclidean
             {
                 // line a and b is not parallel => A.X is not 0
                 Debug.Assert(A.X != 0);
-                return (bStartTrans.X - aStart.X) / A.X;
+                return (bStart.X - aStart.X) / A.X;
             }
             else // if (bVector.Y == 0) // line b is parallel to x axis.
             {
                 // line a and b is not parallel => A.Y is not 0
                 Debug.Assert(A.Y != 0);
-                return (bStartTrans.Y - aStart.Y) / A.Y;
+                return (bStart.Y - aStart.Y) / A.Y;
             }
         }
     }

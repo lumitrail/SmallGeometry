@@ -19,11 +19,18 @@
         }
 
         /// <inheritdoc cref="CoordinateSystemDiscordanceException"/>
-        public CoordinateSystemDiscordanceException(CoordinateSystem a, CoordinateSystem b)
+        public CoordinateSystemDiscordanceException(IEnumerable<CoordinateSystem> coordinateSystems)
             : base()
         {
-            Message = $"Coordinate system must be the same among objects, but now are {a}, {b}.";
+            Message = $"Coordinate system must be the same among objects, but now are {string.Join(',', coordinateSystems)}.";
         }
+
+        /// <inheritdoc cref="CoordinateSystemDiscordanceException"/>
+        public CoordinateSystemDiscordanceException(params CoordinateSystem[] coordinateSystems)
+            : this(coordinateSystems.AsEnumerable())
+        {
+        }
+
 
 
         /// <summary>

@@ -1,9 +1,9 @@
-﻿namespace SmallGeometry.Euclidean
+﻿namespace SmallGeometry.Primitives
 {
     /// <summary>
     /// Interval including Min and Max.
     /// </summary>
-    public readonly struct Interval
+    internal readonly struct Interval
     {
         private static readonly Random Rng = new Random((int)DateTime.Now.Ticks);
 
@@ -22,14 +22,34 @@
 
 
         /// <summary>
-        /// <inheritdoc cref="Interval"/>
+        /// 
         /// </summary>
-        /// <param name="x1"></param>
-        /// <param name="x2"></param>
-        public Interval(double x1, double x2)
+        /// <param name="doubles"></param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Interval(IEnumerable<double> doubles)
         {
-            Min = Math.Min(x1, x2);
-            Max = Math.Max(x1, x2);
+            ArgumentNullException.ThrowIfNull(doubles);
+            if (!doubles.Any())
+            {
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(doubles));
+            }
+
+            Min = doubles.First();
+            Max = doubles.First();
+
+            foreach (double d in doubles)
+            {
+                Min = Math.Min(Min, d);
+                Max = Math.Max(Max, d);
+            }
+        }
+
+        /// <inheritdoc cref="Interval(IEnumerable{double})"/>
+        /// <param name="doubles"></param>
+        public Interval(params double[] doubles)
+            : this(doubles.AsEnumerable())
+        {
         }
 
         /// <summary>
@@ -41,6 +61,8 @@
             Min = b.Min;
             Max = b.Max;
         }
+
+
 
         /// <summary>
         /// 
@@ -104,7 +126,7 @@
         /// <returns></returns>
         public readonly double Random()
         {
-            return Min + (Length * Rng.NextDouble());
+            return Min + Length * Rng.NextDouble();
         }
 
         /// <summary>
@@ -151,8 +173,8 @@
             }
             else if (obj is Interval b)
             {
-                return this.Min == b.Min
-                    && this.Max == b.Max;
+                return Min == b.Min
+                    && Max == b.Max;
             }
             else
             {
