@@ -1,5 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
+using SmallGeometry.Exceptions;
 using SmallGeometry.Interfaces;
 
 namespace SmallGeometry.Geographic
@@ -17,26 +19,23 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// East-West(X), [-180,180]
         /// </summary>
-        public readonly double Longitude => _x;
+        public readonly double Longitude => X;
         /// <summary>
         /// North-South(Y), [-90,90]
         /// </summary>
-        public readonly double Latitude => _y;
+        public readonly double Latitude => Y;
 
         /// <summary>
         /// Same to longitude
         /// </summary>
         [JsonIgnore]
-        public readonly double X => _x;
+        public readonly double X { get; }
         /// <summary>
         /// Same to latitude
         /// </summary>
         [JsonIgnore]
-        public readonly double Y => _y;
+        public readonly double Y { get; }
 
-
-        private readonly double _x;
-        private readonly double _y;
 
 
         /// <summary>
@@ -72,8 +71,8 @@ namespace SmallGeometry.Geographic
             }
             else
             {
-                _x = longitude;
-                _y = latitude;
+                X = longitude;
+                Y = latitude;
             }
         }
 
@@ -83,9 +82,10 @@ namespace SmallGeometry.Geographic
         /// <param name="source"></param>
         public GeoPoint(GeoPoint source)
         {
-            _x = source._x;
-            _y = source._y;
+            X = source.X;
+            Y = source.Y;
         }
+
 
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace SmallGeometry.Geographic
 
 
         /// <summary>
-        /// Gets distance with Haversine.
+        /// Gets distance with Haversine formula.
         /// </summary>
         /// <param name="pos1"></param>
         /// <param name="pos2"></param>
@@ -172,10 +172,15 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="coordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
+        /// <exception cref="NotSupportedException">coordinateSystem must be flat</exception>
+        /// <exception cref="TransformException">failed to transform</exception>
         public readonly Euclidean.FlatPoint Transform(CoordinateSystem coordinateSystem)
         {
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + coordinateSystem);
+            }
             return Transformer.TransformToFlat(this, coordinateSystem);
         }
 
@@ -205,7 +210,7 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {
@@ -224,13 +229,13 @@ namespace SmallGeometry.Geographic
         /// <inheritdoc cref="IPosition2D.GetHashCode(double, double)"/>
         public readonly override int GetHashCode()
         {
-            return IPosition2D.GetHashCode(_x, _y);
+            return IPosition2D.GetHashCode(X, Y);
         }
 
         /// <inheritdoc cref="IPosition2D.ToString(double, double)"/>
         public readonly override string ToString()
         {
-            return IPosition2D.ToString(_x, _y);
+            return IPosition2D.ToString(X, Y);
         }
     }
 }

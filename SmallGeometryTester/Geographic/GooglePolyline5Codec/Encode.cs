@@ -1,6 +1,4 @@
-﻿using SmallGeometry.Geographic;
-
-namespace SmallGeometryTester
+﻿namespace SmallGeometryTester
 {
     public class Encode
     {

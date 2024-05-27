@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using SmallGeometry.Interfaces;
+using SmallGeometry.Exceptions;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry.Euclidean
 {
@@ -23,6 +25,7 @@ namespace SmallGeometry.Euclidean
         public readonly double Y { get; }
 
 
+
         /// <summary>
         /// Without coordinate system info.
         /// </summary>
@@ -41,19 +44,19 @@ namespace SmallGeometry.Euclidean
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="coordinateSystem"></param>
-        /// <exception cref="ArgumentException">coordinateSystem is invalid</exception>
+        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
         public FlatPoint(double x, double y, CoordinateSystem coordinateSystem)
             : this(x, y)
         {
             if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
             {
-                throw new ArgumentException("coordinateSystem must be flat.");
+                throw new NotSupportedException("Coordinate system must be flat.");
             }
             CoordinateSystem = coordinateSystem;
         }
 
         /// <summary>
-        /// Copy
+        /// Copy constructor.
         /// </summary>
         /// <param name="a"></param>
         public FlatPoint(FlatPoint a)
@@ -69,6 +72,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="coordinateSystem"></param>
         /// <param name="result"></param>
         /// <returns></returns>
+        /// <exception cref="NotSupportedException">Coordinate system must be flat.</exception>
         public static bool TryParse(string point, CoordinateSystem coordinateSystem, [NotNullWhen(true)] out FlatPoint? result)
         {
             try
@@ -110,7 +114,7 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
-        /// Points are not the same.
+        /// Points are not the including coordinate system.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -127,7 +131,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="p"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static FlatPoint operator +(FlatPoint p, Vector v)
+        public static FlatPoint operator +(FlatPoint p, Vector2D v)
         {
             return new FlatPoint(p.X + v.X, p.Y + v.Y, p.CoordinateSystem);
         }
@@ -138,7 +142,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="p"></param>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static FlatPoint operator -(FlatPoint p, Vector v)
+        public static FlatPoint operator -(FlatPoint p, Vector2D v)
         {
             return p + (-v);
         }
@@ -150,59 +154,30 @@ namespace SmallGeometry.Euclidean
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public static double GetDistance(FlatPoint a, FlatPoint b)
         {
-            double diffX;
-            double diffY;
-            if (a.CoordinateSystem == b.CoordinateSystem)
-            {
-                diffX = a.X - b.X;
-                diffY = a.Y - b.Y;
-            }
-            else
-            {
-                FlatPoint bTrans = Transformer.TransformToFlat(b, a.CoordinateSystem);
-                diffX = a.X - bTrans.X;
-                diffY = a.Y - bTrans.Y;
-            }
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(a, b);
+
+            double diffX = a.X - b.X;
+            double diffY = a.Y - b.Y;
 
             return Math.Sqrt((diffX * diffX) + (diffY * diffY));
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="targetCoordinateSystem"></param>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException"></exception>
-        /// <exception cref="Exceptions.TransformException"></exception>
+        /// <inheritdoc cref="Transformer.TransformToFlat(FlatPoint, CoordinateSystem)"/>
         public readonly FlatPoint Transform(CoordinateSystem targetCoordinateSystem)
         {
             return Transformer.TransformToFlat(this, targetCoordinateSystem);
         }
 
-        /// <summary>
-        /// Transforms to GeoPoint
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <inheritdoc cref="Transformer.TransformToGeoPoint(FlatPoint)"/>
         public readonly Geographic.GeoPoint TransformToGeoPoint()
         {
             return Transformer.TransformToGeoPoint(this);
         }
 
-        /// <summary>
-        /// Gets Euclidean distance.
-        /// </summary>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="ArgumentException">failed to get projection info</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <inheritdoc cref=" GetDistance(FlatPoint, FlatPoint)"/>
         public readonly double GetDistance(FlatPoint b)
         {
             return GetDistance(this, b);
@@ -231,13 +206,13 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {
                 return false;
             }
-            else if (obj is FlatPoint b)
+            if (obj is FlatPoint b)
             {
                 return this == b;
             }

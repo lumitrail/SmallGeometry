@@ -1,10 +1,14 @@
-﻿namespace SmallGeometry.Euclidean
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SmallGeometry.Primitives
 {
     /// <summary>
     /// Interval including Min and Max.
     /// </summary>
-    public readonly struct Interval
+    internal readonly struct Interval2D
     {
+        private static readonly Random Rng = new Random((int)DateTime.Now.Ticks);
+
         /// <summary>
         /// Min endpoint
         /// </summary>
@@ -20,25 +24,47 @@
 
 
         /// <summary>
-        /// <inheritdoc cref="Interval"/>
+        /// 
         /// </summary>
-        /// <param name="x1"></param>
-        /// <param name="x2"></param>
-        public Interval(double x1, double x2)
+        /// <param name="doubles"></param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Interval2D(IEnumerable<double> doubles)
         {
-            Min = Math.Min(x1, x2);
-            Max = Math.Max(x1, x2);
+            ArgumentNullException.ThrowIfNull(doubles);
+            if (!doubles.Any())
+            {
+                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(doubles));
+            }
+
+            Min = doubles.First();
+            Max = doubles.First();
+
+            foreach (double d in doubles)
+            {
+                Min = Math.Min(Min, d);
+                Max = Math.Max(Max, d);
+            }
+        }
+
+        /// <inheritdoc cref="Interval2D(IEnumerable{double})"/>
+        /// <param name="doubles"></param>
+        public Interval2D(params double[] doubles)
+            : this(doubles.AsEnumerable())
+        {
         }
 
         /// <summary>
         /// Copy constructor
         /// </summary>
         /// <param name="b"></param>
-        public Interval(Interval b)
+        public Interval2D(Interval2D b)
         {
             Min = b.Min;
             Max = b.Max;
         }
+
+
 
         /// <summary>
         /// 
@@ -46,7 +72,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator ==(Interval a, Interval b)
+        public static bool operator ==(Interval2D a, Interval2D b)
         {
             return a.Min == b.Min
                 && a.Max == b.Max;
@@ -58,7 +84,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool operator !=(Interval a, Interval b)
+        public static bool operator !=(Interval2D a, Interval2D b)
         {
             return !(a == b);
         }
@@ -69,7 +95,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool Intersects(Interval a, Interval b)
+        public static bool Intersects(Interval2D a, Interval2D b)
         {
             if (a.Max < b.Min)
             {
@@ -91,11 +117,19 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static Interval Union(Interval a, Interval b)
+        public static Interval2D Union(Interval2D a, Interval2D b)
         {
-            return new Interval(Math.Min(a.Min, b.Min), Math.Max(a.Max, b.Max));
+            return new Interval2D(Math.Min(a.Min, b.Min), Math.Max(a.Max, b.Max));
         }
 
+        /// <summary>
+        /// Picks a random value between Min and Max.
+        /// </summary>
+        /// <returns></returns>
+        public readonly double Random()
+        {
+            return Min + Length * Rng.NextDouble();
+        }
 
         /// <summary>
         /// x is in [Min, Max]?
@@ -109,11 +143,11 @@
         }
 
         /// <summary>
-        /// <inheritdoc cref="Intersects(Interval, Interval)"/>
+        /// <inheritdoc cref="Intersects(Interval2D, Interval2D)"/>
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public readonly bool Intersects(Interval b)
+        public readonly bool Intersects(Interval2D b)
         {
             return Intersects(this, b);
         }
@@ -123,9 +157,9 @@
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public readonly Interval Union(Interval b)
+        public readonly Interval2D Union(Interval2D b)
         {
-            return new Interval(Math.Min(Min, b.Min), Math.Max(Max, b.Max));
+            return new Interval2D(Math.Min(Min, b.Min), Math.Max(Max, b.Max));
         }
 
         /// <summary>
@@ -133,16 +167,16 @@
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public readonly override bool Equals(object? obj)
+        public readonly override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj == null)
             {
                 return false;
             }
-            else if (obj is Interval b)
+            else if (obj is Interval2D b)
             {
-                return this.Min == b.Min
-                    && this.Max == b.Max;
+                return Min == b.Min
+                    && Max == b.Max;
             }
             else
             {

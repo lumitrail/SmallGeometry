@@ -49,22 +49,12 @@ namespace SmallGeometry
             }
         }
 
-        /// <summary>
-        /// FlatPoint to GeoPoint
-        /// </summary>
+        /// <inheritdoc cref="TransformToGeoPoint(FlatPoint)"/>
         /// <param name="sourcePoints"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">sourcePoints is empty</exception>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CoordinateSystemNoneException">sourcePoints has elemets of coordinate system none</exception>
-        /// <exception cref="TransformException">failed to transform</exception>
         public static List<GeoPoint> TransformToGeoPoint(IEnumerable<FlatPoint> sourcePoints)
         {
             ArgumentNullException.ThrowIfNull(sourcePoints);
-            if (!sourcePoints.Any())
-            {
-                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(sourcePoints));
-            }
 
             var result = new List<GeoPoint>(sourcePoints.Count());
 
@@ -83,12 +73,17 @@ namespace SmallGeometry
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
         /// <exception cref="CoordinateSystemNoneException">target coordinate system is none</exception>
+        /// <exception cref="NotSupportedException">targetCoordinateSystem must be flat</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public static FlatPoint TransformToFlat(GeoPoint sourcePoint, CoordinateSystem targetCoordinateSystem)
         {
             if (targetCoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(targetCoordinateSystem));
+            }
+            else if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
             }
             else
             {
@@ -110,23 +105,13 @@ namespace SmallGeometry
             }
         }
 
-        /// <summary>
-        /// GeoPoint to FlatPoint
-        /// </summary>
+        /// <inheritdoc cref="TransformToFlat(GeoPoint, CoordinateSystem)"/>
         /// <param name="sourcePoints"></param>
         /// <param name="targetCoordinateSystem"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">sourcePoints is empty</exception>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CoordinateSystemNoneException">target coordinate system is none</exception>
-        /// <exception cref="TransformException">failed to transform</exception>
         public static List<FlatPoint> TransformToFlat(IEnumerable<GeoPoint> sourcePoints, CoordinateSystem targetCoordinateSystem)
         {
             ArgumentNullException.ThrowIfNull(sourcePoints);
-            if (!sourcePoints.Any())
-            {
-                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(sourcePoints));
-            }
 
             var result = new List<FlatPoint>(sourcePoints.Count());
 
@@ -138,28 +123,32 @@ namespace SmallGeometry
             return result;
         }
 
-
         /// <summary>
         /// FlatPoint to FlatPoint
         /// </summary>
         /// <param name="sourcePoint"></param>
         /// <param name="targetCoordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
+        /// <exception cref="CoordinateSystemNoneException">source XOR target coordinate system is none</exception>
+        /// <exception cref="NotSupportedException">targetCoordinateSystem must be flat</exception>
         /// <exception cref="TransformException">failed to transform</exception>
         public static FlatPoint TransformToFlat(FlatPoint sourcePoint, CoordinateSystem targetCoordinateSystem)
         {
-            if (targetCoordinateSystem == CoordinateSystem.None)
+            if (sourcePoint.CoordinateSystem == targetCoordinateSystem)
+            {
+                return sourcePoint;
+            }
+            else if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
+            }
+            else if (targetCoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(targetCoordinateSystem));
             }
             else if (sourcePoint.CoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(sourcePoint));
-            }
-            else if (sourcePoint.CoordinateSystem == targetCoordinateSystem)
-            {
-                return sourcePoint;
             }
             else
             {
@@ -181,24 +170,11 @@ namespace SmallGeometry
             }
         }
 
-        /// <summary>
-        /// FlatPoint to FlatPoint
-        /// </summary>
-        /// <param name="sourcePoints"></param>
-        /// <param name="targetCoordinateSystem"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException">sourcePoints is empty</exception>
+        /// <inheritdoc cref="TransformToFlat(FlatPoint, CoordinateSystem)"/>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="TransformException">failed to transform</exception>
         public static List<FlatPoint> TransformToFlat(IEnumerable<FlatPoint> sourcePoints, CoordinateSystem targetCoordinateSystem)
         {
             ArgumentNullException.ThrowIfNull(sourcePoints);
-
-            if (!sourcePoints.Any())
-            {
-                throw new ArgumentException(ExceptionMessages.PointsCountZero, nameof(sourcePoints));
-            }
 
             var result = new List<FlatPoint>(sourcePoints.Count());
 

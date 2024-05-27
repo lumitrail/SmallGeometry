@@ -2,6 +2,7 @@
 
 using SmallGeometry.Exceptions;
 using SmallGeometry.Interfaces;
+using SmallGeometry.Primitives;
 
 namespace SmallGeometry.Geographic
 {
@@ -47,11 +48,11 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// X-axis interval
         /// </summary>
-        private Euclidean.Interval IntervalX { get; }
+        private Interval2D IntervalX { get; }
         /// <summary>
         /// Y-axis interval
         /// </summary>
-        private Euclidean.Interval IntervalY { get; }
+        private Interval2D IntervalY { get; }
 
 
         /// <summary>
@@ -63,30 +64,8 @@ namespace SmallGeometry.Geographic
         /// <param name="latitude2"></param>
         public GeoBoundingBox(double longitude1, double longitude2, double latitude1, double latitude2)
         {
-            IntervalX = new Euclidean.Interval(longitude1, longitude2);
-            IntervalY = new Euclidean.Interval(latitude1, latitude2);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        public GeoBoundingBox(GeoPoint p1, GeoPoint p2)
-        {
-            IntervalX = new Euclidean.Interval(p1.Longitude, p2.Longitude);
-            IntervalY = new Euclidean.Interval(p1.Latitude, p2.Latitude);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <exception cref="ArgumentException">points.Count == 0</exception>
-        /// <exception cref="ArgumentNullException">points is null</exception>
-        public GeoBoundingBox(params GeoPoint[] points)
-            : this(points.AsEnumerable())
-        {
+            IntervalX = new Interval2D(longitude1, longitude2);
+            IntervalY = new Interval2D(latitude1, latitude2);
         }
 
         /// <summary>
@@ -117,18 +96,32 @@ namespace SmallGeometry.Geographic
                 ymax = Math.Max(ymax, p.Latitude);
             }
 
-            IntervalX = new Euclidean.Interval(xmin, xmax);
-            IntervalY = new Euclidean.Interval(ymin, ymax);
+            IntervalX = new Interval2D(xmin, xmax);
+            IntervalY = new Interval2D(ymin, ymax);
         }
 
-        private GeoBoundingBox(Euclidean.Interval intervalX, Euclidean.Interval intervalY)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public GeoBoundingBox(params GeoPoint[] points)
+            : this(points.AsEnumerable())
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="intervalX"></param>
+        /// <param name="intervalY"></param>
+        private GeoBoundingBox(Interval2D intervalX, Interval2D intervalY)
         {
             IntervalX = intervalX;
             IntervalY = intervalY;
         }
 
         /// <summary>
-        /// 
+        /// Copy constructor
         /// </summary>
         /// <param name="b"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -147,10 +140,19 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public GeoBoundingBox GetPaddedCopy(double xPadding, double yPadding)
         {
-            var intervalX = new Euclidean.Interval(Right + xPadding, Left - xPadding);
-            var intervalY = new Euclidean.Interval(Top + yPadding, Bottom - yPadding);
+            var intervalX = new Interval2D(Right + xPadding, Left - xPadding);
+            var intervalY = new Interval2D(Top + yPadding, Bottom - yPadding);
 
             return new GeoBoundingBox(intervalX, intervalY);
+        }
+
+        /// <summary>
+        /// Picks a random point inside the bounding box.
+        /// </summary>
+        /// <returns></returns>
+        public GeoPoint PickRandomPoint()
+        {
+            return new GeoPoint(IntervalX.Random(), IntervalY.Random());
         }
 
         /// <summary>
@@ -196,22 +198,22 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         /// <exception cref="NotSupportedException">targetCoordinateSystem is not flat</exception>
         /// <exception cref="TransformException"></exception>
-        public Euclidean.BoundingBox TransformToFlatBoundingBox(CoordinateSystem targetCoordinateSystem)
+        public Euclidean.FlatBoundingBox TransformToFlatBoundingBox(CoordinateSystem targetCoordinateSystem)
         {
-            if (CoordinateSystemUtil.IsCoordinateSystemEllipsoidal(targetCoordinateSystem))
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
             {
-                throw new NotSupportedException(ExceptionMessages.CoordinateSystemDiscordant + targetCoordinateSystem);
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
             }
             else if (targetCoordinateSystem == CoordinateSystem.None)
             {
-                return new Euclidean.BoundingBox(Left, Right, Top, Bottom, CoordinateSystem.None);
+                return new Euclidean.FlatBoundingBox(Left, Right, Top, Bottom, CoordinateSystem.None);
             }
             else
             {
                 Euclidean.FlatPoint min = GetBottomLeft().Transform(targetCoordinateSystem);
                 Euclidean.FlatPoint max = GetTopRight().Transform(targetCoordinateSystem);
 
-                return new Euclidean.BoundingBox(min, max);
+                return new Euclidean.FlatBoundingBox(min, max);
             }
         }
 
@@ -244,6 +246,39 @@ namespace SmallGeometry.Geographic
         public GeoPoint GetTopRight()
         {
             return new GeoPoint(Right, Top);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            else if (obj is GeoBoundingBox b)
+            {
+                return Top == b.Top
+                    && Bottom == b.Bottom
+                    && Left == b.Left
+                    && Right == b.Right;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return Crc32Wrapper.GetCrc32Hash([Top, Bottom, Left, Right]);
         }
 
         /// <summary>
