@@ -420,6 +420,25 @@ namespace SmallGeometry.Euclidean
         }
         #endregion
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint First()
+        {
+            return Points[0];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint Last()
+        {
+            return Points[Count - 1];
+        }
+
         /// <summary>
         /// Gets a copy of array.
         /// </summary>

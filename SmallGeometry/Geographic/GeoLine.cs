@@ -153,6 +153,24 @@ namespace SmallGeometry.Geographic
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public GeoPoint First()
+        {
+            return Points[0];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public GeoPoint Last()
+        {
+            return Points[Count - 1];
+        }
+
+        /// <summary>
         /// Gets a copy of list.
         /// </summary>
         /// <returns></returns>
