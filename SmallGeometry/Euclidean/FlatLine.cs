@@ -420,6 +420,14 @@ namespace SmallGeometry.Euclidean
         }
         #endregion
 
+        /// <summary>
+        /// Gets a copy of array.
+        /// </summary>
+        /// <returns></returns>
+        public FlatPoint[] ToArray()
+        {
+            return Points.ToArray();
+        }
 
         /// <summary>
         /// [[x,y],[x,y],...,[x,y]]

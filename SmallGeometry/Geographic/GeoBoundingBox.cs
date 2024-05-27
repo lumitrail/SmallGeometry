@@ -71,28 +71,6 @@ namespace SmallGeometry.Geographic
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        public GeoBoundingBox(GeoPoint p1, GeoPoint p2)
-        {
-            IntervalX = new Interval2D(p1.Longitude, p2.Longitude);
-            IntervalY = new Interval2D(p1.Latitude, p2.Latitude);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="points"></param>
-        /// <exception cref="ArgumentException">points.Count == 0</exception>
-        /// <exception cref="ArgumentNullException">points is null</exception>
-        public GeoBoundingBox(params GeoPoint[] points)
-            : this(points.AsEnumerable())
-        {
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="points"></param>
         /// <exception cref="ArgumentException">points is empty</exception>
         /// <exception cref="ArgumentNullException">points is null</exception>
@@ -122,6 +100,20 @@ namespace SmallGeometry.Geographic
             IntervalY = new Interval2D(ymin, ymax);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="points"></param>
+        public GeoBoundingBox(params GeoPoint[] points)
+            : this(points.AsEnumerable())
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="intervalX"></param>
+        /// <param name="intervalY"></param>
         private GeoBoundingBox(Interval2D intervalX, Interval2D intervalY)
         {
             IntervalX = intervalX;
@@ -129,7 +121,7 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
-        /// 
+        /// Copy constructor
         /// </summary>
         /// <param name="b"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -158,7 +150,7 @@ namespace SmallGeometry.Geographic
         /// Picks a random point inside the bounding box.
         /// </summary>
         /// <returns></returns>
-        public GeoPoint Random()
+        public GeoPoint PickRandomPoint()
         {
             return new GeoPoint(IntervalX.Random(), IntervalY.Random());
         }
@@ -254,6 +246,30 @@ namespace SmallGeometry.Geographic
         public GeoPoint GetTopRight()
         {
             return new GeoPoint(Right, Top);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            else if (obj is GeoBoundingBox b)
+            {
+                return Top == b.Top
+                    && Bottom == b.Bottom
+                    && Left == b.Left
+                    && Right == b.Right;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+using SmallGeometry.Exceptions;
 using SmallGeometry.Interfaces;
 
 namespace SmallGeometry.Geographic
@@ -144,7 +145,7 @@ namespace SmallGeometry.Geographic
 
 
         /// <summary>
-        /// Gets distance with Haversine.
+        /// Gets distance with Haversine formula.
         /// </summary>
         /// <param name="pos1"></param>
         /// <param name="pos2"></param>
@@ -171,10 +172,15 @@ namespace SmallGeometry.Geographic
         /// </summary>
         /// <param name="coordinateSystem"></param>
         /// <returns></returns>
-        /// <exception cref="Exceptions.CoordinateSystemNoneException">source or target coordinate system is none</exception>
-        /// <exception cref="Exceptions.TransformException">failed to transform</exception>
+        /// <exception cref="CoordinateSystemNoneException">source or target coordinate system is none</exception>
+        /// <exception cref="NotSupportedException">coordinateSystem must be flat</exception>
+        /// <exception cref="TransformException">failed to transform</exception>
         public readonly Euclidean.FlatPoint Transform(CoordinateSystem coordinateSystem)
         {
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + coordinateSystem);
+            }
             return Transformer.TransformToFlat(this, coordinateSystem);
         }
 

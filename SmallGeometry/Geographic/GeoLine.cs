@@ -19,19 +19,19 @@ namespace SmallGeometry.Geographic
         /// <param name="idx"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public GeoPoint this[int idx] => _points[idx];
+        public GeoPoint this[int idx] => Points[idx];
 
         /// <summary>
         /// Number of points
         /// </summary>
-        public int Count => _points.Count;
+        public int Count => Points.Count;
 
         /// <summary>
         /// 
         /// </summary>
         public GeoBoundingBox BoundingBox { get; }
 
-        private IReadOnlyList<GeoPoint> _points { get; }
+        private IReadOnlyList<GeoPoint> Points { get; }
         private double _lengthInMeter = -1;
 
 
@@ -53,17 +53,20 @@ namespace SmallGeometry.Geographic
             }
             else if (pointCount == 1)
             {
-                _points = [points.First(), points.First()];
+                Points = [points.First(), points.First()];
             }
             else // pointsCount > 1
             {
-                _points = points.ToArray();
+                Points = points.ToArray();
             }
 
-            BoundingBox = new GeoBoundingBox(_points);
+            BoundingBox = new GeoBoundingBox(Points);
         }
 
+        /// <summary>
         /// <inheritdoc cref="GeoLine(IEnumerable{GeoPoint})"/>
+        /// </summary>
+        /// <param name="points"></param>
         public GeoLine(params GeoPoint[] points)
             : this(points.AsEnumerable())
         {
@@ -77,6 +80,24 @@ namespace SmallGeometry.Geographic
         #endregion
 
 
+        #region Geoline alone
+        /// <summary>
+        /// Gets Haversine length.
+        /// </summary>
+        /// <returns></returns>
+        public double GetLengthInMeter()
+        {
+            if (_lengthInMeter < 0)
+            {
+                _lengthInMeter = 0;
+                for (int i = 1; i < Count; ++i)
+                {
+                    _lengthInMeter += Points[i - 1].GetDistanceInMeter(Points[i]);
+                }
+            }
+
+            return _lengthInMeter;
+        }
 
         /// <summary>
         /// Get a copy of line with same points follwing previous point removed.
@@ -109,8 +130,6 @@ namespace SmallGeometry.Geographic
             return result;
         }
 
-
-
         /// <summary>
         /// <inheritdoc cref="GooglePolyline5Codec.Encode(IEnumerable{GeoPoint})"/>
         /// </summary>
@@ -121,34 +140,16 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
-        /// Gets Haversine length.
-        /// </summary>
-        /// <returns></returns>
-        public double GetLengthInMeter()
-        {
-            if (_lengthInMeter < 0)
-            {
-                _lengthInMeter = 0;
-                for (int i = 1; i < Count; ++i)
-                {
-                    _lengthInMeter += _points[i - 1].GetDistanceInMeter(_points[i]);
-                }
-            }
-
-            return _lengthInMeter;
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public GeoLine GetReversedCopy()
         {
-            var reversedPoints = new List<GeoPoint>(_points);
+            var reversedPoints = new List<GeoPoint>(Points);
             reversedPoints.Reverse();
             return new GeoLine(reversedPoints);
         }
-
+        #endregion
 
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public List<GeoPoint> ToList()
         {
-            return new List<GeoPoint>(_points);
+            return new List<GeoPoint>(Points);
         }
 
         /// <summary>
@@ -166,10 +167,8 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public GeoPoint[] ToArray()
         {
-            return _points.ToArray();
+            return Points.ToArray();
         }
-
-
 
         /// <summary>
         /// [[x,y],[x,y],...,[x,y]]
@@ -177,7 +176,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public override string ToString()
         {
-            return $"[{string.Join(',', _points.Select(p => p.ToString()))}]";
+            return $"[{string.Join(',', Points.Select(p => p.ToString()))}]";
         }
 
         /// <summary>
@@ -186,7 +185,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         public IEnumerator<GeoPoint> GetEnumerator()
         {
-            return _points.GetEnumerator();
+            return Points.GetEnumerator();
         }
 
         /// <summary>
@@ -195,7 +194,7 @@ namespace SmallGeometry.Geographic
         /// <returns></returns>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return _points.GetEnumerator();
+            return Points.GetEnumerator();
         }
     }
 }

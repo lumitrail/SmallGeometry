@@ -284,6 +284,30 @@ namespace SmallGeometry.Euclidean
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            else if (obj is FlatBoundingBox b)
+            {
+                return Top == b.Top
+                    && Bottom == b.Bottom
+                    && Left == b.Left
+                    && Right == b.Right;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Returns a string representation
         /// </summary>
         /// <returns></returns>

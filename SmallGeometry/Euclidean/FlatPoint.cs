@@ -212,7 +212,7 @@ namespace SmallGeometry.Euclidean
             {
                 return false;
             }
-            else if (obj is FlatPoint b)
+            if (obj is FlatPoint b)
             {
                 return this == b;
             }
