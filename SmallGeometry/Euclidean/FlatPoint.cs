@@ -64,6 +64,36 @@ namespace SmallGeometry.Euclidean
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="wkt">"POINT(x y)"</param>
+        /// <param name="coordinateSystem"></param>
+        /// <exception cref="FormatException"></exception>
+        /// <exception cref="NotSupportedException">coordinateSystem must be flat</exception>
+        /// <exception cref="OverflowException"></exception>
+        public FlatPoint(string wkt, CoordinateSystem coordinateSystem)
+        {
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + coordinateSystem);
+            }
+
+            string[] xy = wkt
+                .Remove(0, 5)
+                .Trim(['(', ')'])
+                .Split(' ');
+
+            if (xy.Length < 2)
+            {
+                throw new FormatException();
+            }
+
+            X = Convert.ToDouble(xy[0]);
+            Y = Convert.ToDouble(xy[1]);
+            CoordinateSystem = coordinateSystem;
+        }
+
 
         /// <summary>
         /// Tries to parse string like "(x, y)", "[x, y]"

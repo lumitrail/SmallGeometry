@@ -13,33 +13,53 @@ namespace SmallGeometry
         /// <summary>
         /// range: 0~360
         /// </summary>
-        public double DegreeErrorTolerance
+        public double DegreeTolerance
         {
-            get => _degreeErrorTolerance;
-            set { _degreeErrorTolerance = Math.Abs(value) % 360; }
+            get => _degreeTolerance;
+            set { _degreeTolerance = Math.Abs(value) % 360; }
         }
         /// <summary>
         /// range: 0~double.MaxValue
         /// </summary>
-        public double LengthAbsoluteErrorTolerance
+        public double DoubleAbsoluteTolerance
         {
-            get => _lengthAbsoluteErrorTolerance;
-            set { _lengthAbsoluteErrorTolerance = Math.Abs(value); }
+            get => _doubleAbsoulteTolerance;
+            set { _doubleAbsoulteTolerance = Math.Abs(value); }
         }
         /// <summary>
         /// range: 0~double.MaxValue
         /// </summary>
-        public double LengthPercentErrorTolerance
+        public double DoublePercentTolerance
         {
-            get => _lengthPercentErrorTolerance;
-            set { _lengthPercentErrorTolerance = Math.Abs(value); }
+            get => _doublePercentTolerance;
+            set { _doublePercentTolerance = Math.Abs(value); }
         }
 
 
-        private double _degreeErrorTolerance = 0;
-        private double _lengthAbsoluteErrorTolerance = 0;
-        private double _lengthPercentErrorTolerance = 0;
+        private double _degreeTolerance = 0.001;
+        private double _doubleAbsoulteTolerance = 0.001;
+        private double _doublePercentTolerance = 0.1;
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SmallGeometryComparer()
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="degreeTolerance"></param>
+        /// <param name="doubleAbsoulteTolerance"></param>
+        /// <param name="doublePercentTolerance"></param>
+        public SmallGeometryComparer(double degreeTolerance, double doubleAbsoulteTolerance, double doublePercentTolerance)
+        {
+            _degreeTolerance = degreeTolerance;
+            _doubleAbsoulteTolerance = doubleAbsoulteTolerance;
+            _doublePercentTolerance = doublePercentTolerance;
+        }
 
         /// <summary>
         /// Are two vectors practically the same?
@@ -53,13 +73,13 @@ namespace SmallGeometry
             {
                 return true;
             }
-            else if (Vector2D.IsParallel(a, b, DegreeErrorTolerance))
+            else if (Vector2D.IsParallel(a, b, DegreeTolerance))
             {
                 double sizeDiff = Math.Abs(a.Size - b.Size);
                 double longerOne = Math.Max(a.Size, b.Size);
 
-                bool isLengthPercentOk = (sizeDiff / longerOne) * 100 < LengthPercentErrorTolerance;
-                bool isLengthAbsoluteOk = sizeDiff < LengthAbsoluteErrorTolerance;
+                bool isLengthPercentOk = (sizeDiff / longerOne) * 100 < DoublePercentTolerance;
+                bool isLengthAbsoluteOk = sizeDiff < DoubleAbsoluteTolerance;
 
                 return isLengthPercentOk && isLengthAbsoluteOk;
             }
@@ -77,7 +97,7 @@ namespace SmallGeometry
         /// <returns></returns>
         public bool IsSame(FlatPoint a, FlatPoint b)
         {
-            return a.GetDistance(b) < LengthAbsoluteErrorTolerance;
+            return a.GetDistance(b) < DoubleAbsoluteTolerance;
         }
 
         /// <summary>
@@ -88,7 +108,21 @@ namespace SmallGeometry
         /// <returns></returns>
         public bool IsSame(GeoPoint a, GeoPoint b)
         {
-            return a.GetDistanceInMeter(b) < LengthAbsoluteErrorTolerance;
+            return a.GetDistanceInMeter(b) < DoubleAbsoluteTolerance;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="truth"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool IsRelativelySame(double truth, double value)
+        {
+            double diff = Math.Abs(value / truth);
+            double diffPercent = 100 * diff / truth;
+
+            return diffPercent < DoublePercentTolerance;
         }
     }
 }

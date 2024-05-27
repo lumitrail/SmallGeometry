@@ -4,12 +4,7 @@ namespace SmallGeometryTester
 {
     static class VectorIsSameAssert
     {
-        private static readonly SmallGeometryComparer VectorComparer = new SmallGeometryComparer
-        {
-            DegreeErrorTolerance = 0.01,
-            LengthAbsoluteErrorTolerance = 0.001,
-            LengthPercentErrorTolerance = 0.1
-        };
+        private static readonly SmallGeometryComparer VectorComparer = new SmallGeometryComparer(0.01, 0.001, 0.1);
 
 
         public static void IsSameAssert(Vector2D a, Vector2D b)

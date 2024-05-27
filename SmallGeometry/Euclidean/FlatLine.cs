@@ -241,11 +241,14 @@ namespace SmallGeometry.Euclidean
             for (int i=0; i<flatLineSegments.Count; ++i)
             {
                 FlatLineSegment currentSegment = flatLineSegments[i];
-                for (int j=0; j<flatLineSegments.Count; ++j)
+                for (int j=i+1; j<flatLineSegments.Count; ++j)
                 {
                     FlatLineSegment comparingSegment = flatLineSegments[j];
 
-                    if (FlatLineSegment.FindIntersectingPointOrNull(currentSegment, comparingSegment).HasValue)
+                    FlatPoint? possibleIntersection = FlatLineSegment.FindIntersectingPointOrNull(currentSegment, comparingSegment);
+
+                    if (possibleIntersection.HasValue
+                        && possibleIntersection != currentSegment.End)
                     {
                         return true;
                     }

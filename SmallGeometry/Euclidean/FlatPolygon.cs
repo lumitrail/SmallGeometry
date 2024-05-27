@@ -45,7 +45,6 @@ namespace SmallGeometry.Euclidean
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        /// <exception cref="NotSupportedException">Polygon has self intersection.</exception>
         public FlatPolygon(IEnumerable<FlatPoint> flatPoints)
         {
             ArgumentNullException.ThrowIfNull(flatPoints);
@@ -53,12 +52,10 @@ namespace SmallGeometry.Euclidean
             {
                 throw new ArgumentException(ExceptionMessages.PointsCountAtLeast(3));
             }
-
-            var tempLine = new FlatLine(flatPoints);
-
-            if (tempLine.HasSelfIntersection())
+            var coordSystems = flatPoints.Select(fp => fp.CoordinateSystem).Distinct();
+            if (coordSystems.Count() > 1)
             {
-                throw new NotSupportedException(ExceptionMessages.HasSelfIntersection);
+                throw new CoordinateSystemDiscordanceException(coordSystems);
             }
 
             var tempList = new List<FlatPoint>(flatPoints);
@@ -75,6 +72,48 @@ namespace SmallGeometry.Euclidean
         public FlatPolygon(params FlatPoint[] flatPoints)
             : this(flatPoints.AsEnumerable())
         {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="wkt">"POLYGON((x y,x y,...,x y))"</param>
+        /// <param name="coordinateSystem">must be flat</param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="NotSupportedException">coordinateSystem must be flat</exception>
+        public FlatPolygon(string wkt, CoordinateSystem coordinateSystem)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(wkt);
+            if (!CoordinateSystemUtil.IsCoordinateSystemFlat(coordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + coordinateSystem);
+            }
+
+            string[] coords = wkt
+                .Remove(0, 7)
+                .Trim(['(', ')'])
+                .Split(',');
+
+            var flatPoints = new List<FlatPoint>(coords.Length);
+
+            foreach (string coord in coords)
+            {
+                string[] xy = coord.Split(' ');
+                if (double.TryParse(xy[0], out double x)
+                    && double.TryParse(xy[1], out double y))
+                {
+                    flatPoints.Add(new FlatPoint(x, y, coordinateSystem));
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(false);
+                }
+            }
+
+            var good = new FlatPolygon(flatPoints);
+            BoundingBox = good.BoundingBox;
+            Points = good.Points;
         }
 
 

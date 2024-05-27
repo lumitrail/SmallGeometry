@@ -105,15 +105,15 @@ namespace SmallGeometry.Euclidean
                 return null;
             }
 
-            double k = CalculateK(a.Start, A, b.Start, B);
+            double l = CalculateL(a.Start, A, b.Start, B);
 
-            if (k > 1 || k < 0)
+            if (l > 1 || l < 0)
             {
                 return null;
             }
             else
             {
-                return a.Start + (k * A);
+                return a.Start + (l * B);
             }
         }
 
@@ -138,9 +138,9 @@ namespace SmallGeometry.Euclidean
 
             // intersection: aStart + k*aVector = bStart + l*bVector
             // finding k
-            double k = CalculateK(aStart, A, bStart, B);
+            double l = CalculateL(aStart, A, bStart, B);
 
-            return aStart + (k * A);
+            return aStart + (l * B);
         }
 
         /// <inheritdoc cref="FindIntersectingPointOrNull(FlatPoint, Vector2D, FlatPoint, Vector2D)"/>
@@ -160,7 +160,7 @@ namespace SmallGeometry.Euclidean
 
 
         /// <summary>
-        /// Finding k
+        /// Finding l
         /// </summary>
         /// <param name="aStart"></param>
         /// <param name="A"></param>
@@ -169,33 +169,36 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="ArgumentException">Vector A and B are parallel(including Zero vector condition).</exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        private static double CalculateK(FlatPoint aStart, Vector2D A, FlatPoint bStart, Vector2D B)
+        private static double CalculateL(FlatPoint aStart, Vector2D A, FlatPoint bStart, Vector2D B)
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(aStart, bStart);
-
             if (Vector2D.IsParallel(A, B))
             {
                 throw new ArgumentException($"Vector A({nameof(A)} and B({nameof(B)}) are parallel.");
             }
-            
-            if (A.X != 0 && B.Y != 0)
-            {
-                double dx = aStart.X - bStart.X;
-                double dy = aStart.Y - bStart.Y;
+            // Below none of A, B is Zero vector.
 
-                return ((dx / B.X) - (dy / B.Y)) / ((A.Y / B.Y) - (A.X / B.X));
-            }
-            else if (B.X == 0) // line b is parallel to y axis.
+            // Solving equation
+            // aStart + k*A = bStart + l*B
+            if (A.X != 0
+                && A.Y != 0)
             {
-                // line a and b is not parallel => A.X is not 0
-                Debug.Assert(A.X != 0);
-                return (bStart.X - aStart.X) / A.X;
+                // aStart + k*A = bStart + l*B
+                double lCoef = (B.X / A.X) - (B.Y / A.Y);
+                double rhs = (bStart.Y - aStart.Y) / A.Y - (bStart.X - aStart.X) / A.X;
+                return rhs / lCoef;
             }
-            else // if (bVector.Y == 0) // line b is parallel to x axis.
+            else if (A.X == 0)
             {
-                // line a and b is not parallel => A.Y is not 0
-                Debug.Assert(A.Y != 0);
-                return (bStart.Y - aStart.Y) / A.Y;
+                // aStart.X = bStart.X + l * B.X
+                // B.X is not 0 because A,B are not parallel
+                return (aStart.X - bStart.X) / B.X;
+            }
+            else // A.Y == 0
+            {
+                // aStart.Y = bStart.Y + l * B.Y
+                // B.Y is not 0 because A,B are not parallel
+                return (bStart.Y - aStart.Y) / B.Y;
             }
         }
     }
