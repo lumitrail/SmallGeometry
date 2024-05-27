@@ -1,9 +1,4 @@
-﻿#if DEBUG
-using SmallGeometry.Euclidean;
-using SmallGeometry.Geographic;
-using SmallGeometry.Primitives;
-
-namespace SmallGeometry
+﻿namespace SmallGeometryTester
 {
     /// <summary>
     /// Value comparing with some tolerance.
@@ -126,4 +121,3 @@ namespace SmallGeometry
         }
     }
 }
-#endif
