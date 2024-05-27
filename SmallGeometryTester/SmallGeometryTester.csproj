@@ -22,10 +22,17 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-	<Using Include="Xunit.Abstractions"/>
-	  <Using Include="SmallGeometry"/>
-	  <Using Include="SmallGeometry.Euclidean"/>
-	  <Using Include="SmallGeometry.Geographic"/>
+	<Using Include="Xunit.Abstractions" />
+	  <Using Include="SmallGeometry" />
+	  <Using Include="SmallGeometry.Euclidean" />
+	  <Using Include="SmallGeometry.Geographic" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Euclidean\FlatPoint\" />
+    <Folder Include="Euclidean\FlatBoundingBox\" />
+    <Folder Include="Euclidean\FlatLine\" />
+    <Folder Include="Euclidean\FlatLineSegment\" />
   </ItemGroup>
 
 </Project>

@@ -273,6 +273,15 @@ namespace SmallGeometry.Geographic
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return Crc32Wrapper.GetCrc32Hash([Top, Bottom, Left, Right]);
+        }
+
+        /// <summary>
         /// Returns a string representation
         /// </summary>
         /// <returns></returns>

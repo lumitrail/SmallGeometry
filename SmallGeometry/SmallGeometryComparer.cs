@@ -1,4 +1,5 @@
-﻿using SmallGeometry.Euclidean;
+﻿#if DEBUG
+using SmallGeometry.Euclidean;
 using SmallGeometry.Geographic;
 using SmallGeometry.Primitives;
 
@@ -91,3 +92,4 @@ namespace SmallGeometry
         }
     }
 }
+#endif
