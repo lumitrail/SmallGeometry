@@ -63,9 +63,7 @@ namespace SmallGeometry.Geographic
             BoundingBox = new GeoBoundingBox(Points);
         }
 
-        /// <summary>
         /// <inheritdoc cref="GeoLine(IEnumerable{GeoPoint})"/>
-        /// </summary>
         /// <param name="points"></param>
         public GeoLine(params GeoPoint[] points)
             : this(points.AsEnumerable())

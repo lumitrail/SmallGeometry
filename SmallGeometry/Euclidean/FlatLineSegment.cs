@@ -13,7 +13,7 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// Coordinate system of this segment.
         /// </summary>
-        public CoordinateSystem CoordinateSystem { get; }
+        public CoordinateSystem CoordinateSystem => Start.CoordinateSystem;
         /// <summary>
         /// Start coordinate of this segment.
         /// </summary>
@@ -91,6 +91,7 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
+        /// <remarks>if a and b are same or parallel, returns null</remarks>
         public static FlatPoint? FindIntersectingPointOrNull(FlatLineSegment a, FlatLineSegment b)
         {
             ArgumentNullException.ThrowIfNull(a);

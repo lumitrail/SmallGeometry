@@ -11,7 +11,7 @@ namespace SmallGeometry.Euclidean
         /// <summary>
         /// 
         /// </summary>
-        public CoordinateSystem CoordinateSystem { get; }
+        public CoordinateSystem CoordinateSystem => Points[0].CoordinateSystem;
 
         /// <summary>
         /// 
@@ -45,6 +45,7 @@ namespace SmallGeometry.Euclidean
         /// <param name="points"></param>
         /// <exception cref="ArgumentException">points is empty</exception>
         /// <exception cref="ArgumentNullException">points is null</exception>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
         public FlatLine(IEnumerable<FlatPoint> points)
         {
             ArgumentNullException.ThrowIfNull(points);
@@ -69,7 +70,6 @@ namespace SmallGeometry.Euclidean
                 Points = points.Select(p => p).ToList();
             }
 
-            CoordinateSystem = points.First().CoordinateSystem;
             BoundingBox = new FlatBoundingBox(Points);
         }
 
@@ -90,7 +90,6 @@ namespace SmallGeometry.Euclidean
             ArgumentNullException.ThrowIfNull(b);
 
             Points = b.Points;
-            CoordinateSystem = b.CoordinateSystem;
             BoundingBox = b.BoundingBox;
         }
         #endregion
@@ -229,6 +228,31 @@ namespace SmallGeometry.Euclidean
             }
 
             return new FlatLine(result);
+        }
+
+        /// <summary>
+        /// Is FlatLine intersects itself?
+        /// </summary>
+        /// <returns></returns>
+        public bool HasSelfIntersection()
+        {
+            List<FlatLineSegment> flatLineSegments = GetLineSegments();
+
+            for (int i=0; i<flatLineSegments.Count; ++i)
+            {
+                FlatLineSegment currentSegment = flatLineSegments[i];
+                for (int j=0; j<flatLineSegments.Count; ++j)
+                {
+                    FlatLineSegment comparingSegment = flatLineSegments[j];
+
+                    if (FlatLineSegment.FindIntersectingPointOrNull(currentSegment, comparingSegment).HasValue)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
         #endregion
 
