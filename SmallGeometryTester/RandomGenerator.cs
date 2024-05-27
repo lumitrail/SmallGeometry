@@ -42,5 +42,14 @@
 
             return x;
         }
+
+        /// <summary>
+        /// 5:5 = true:false
+        /// </summary>
+        /// <returns></returns>
+        public static bool TossCoin()
+        {
+            return RNG.NextDouble() < 0.5;
+        }
     }
 }

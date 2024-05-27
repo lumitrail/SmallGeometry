@@ -238,17 +238,27 @@ namespace SmallGeometry.Euclidean
         {
             List<FlatLineSegment> flatLineSegments = GetLineSegments();
 
-            for (int i=0; i<flatLineSegments.Count; ++i)
+            for (int i=0; i<flatLineSegments.Count-1; ++i)
             {
                 FlatLineSegment currentSegment = flatLineSegments[i];
-                for (int j=i+1; j<flatLineSegments.Count; ++j)
+
+                // returning?
+                {
+                    FlatLineSegment comparingSegment = flatLineSegments[i + 1];
+                    double innerProduct = Vector2D.InnerProduct(currentSegment.GetVector(), comparingSegment.GetVector());
+                    if (innerProduct == -1)
+                    {
+                        return true;
+                    }
+                }
+
+                for (int j=i+2; j<flatLineSegments.Count; ++j)
                 {
                     FlatLineSegment comparingSegment = flatLineSegments[j];
 
                     FlatPoint? possibleIntersection = FlatLineSegment.FindIntersectingPointOrNull(currentSegment, comparingSegment);
 
-                    if (possibleIntersection.HasValue
-                        && possibleIntersection != currentSegment.End)
+                    if (possibleIntersection.HasValue)
                     {
                         return true;
                     }

@@ -81,6 +81,32 @@ namespace SmallGeometry.Euclidean
             }
         }
 
+        /// <summary>
+        /// Is p on this segment?
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="toleranceInDegree"></param>
+        /// <returns></returns>
+        /// <exception cref="CoordinateSystemDiscordanceException"></exception>
+        public bool Contains(FlatPoint p, double toleranceInDegree)
+        {
+            CoordinateSystemDiscordanceException.ThrowWhenDifferent(this, p);
+
+            Vector2D thisVector = this.GetVector();
+            var offVector = new Vector2D(Start, p);
+
+            bool isSameDirection = Vector2D.GetAngleDegree(thisVector, offVector) <= toleranceInDegree;
+            bool isNotFar = offVector.Size <= thisVector.Size;
+
+            return isSameDirection && isNotFar;
+        }
+
+        /// <inheritdoc cref="Contains(FlatPoint, double)"/>
+        /// <param name="p"></param>
+        public bool Contains(FlatPoint p)
+        {
+            return Contains(p, 0.001);
+        }
 
         /// <summary>
         /// Finds intersection between a and b.
@@ -104,17 +130,21 @@ namespace SmallGeometry.Euclidean
             {
                 return null;
             }
+            // aStart + k*A = bStart + l*B
+            double k = CalculateK(a.Start, A, b.Start, B);
 
-            double l = CalculateL(a.Start, A, b.Start, B);
+            if (0 <= k
+                && k <= 1)
+            {
+                FlatPoint possibleIntersection = a.Start + (k * A);
 
-            if (l > 1 || l < 0)
-            {
-                return null;
+                if (b.Contains(possibleIntersection))
+                {
+                    return possibleIntersection;
+                }
             }
-            else
-            {
-                return a.Start + (l * B);
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -138,9 +168,9 @@ namespace SmallGeometry.Euclidean
 
             // intersection: aStart + k*aVector = bStart + l*bVector
             // finding k
-            double l = CalculateL(aStart, A, bStart, B);
+            double k = CalculateK(aStart, A, bStart, B);
 
-            return aStart + (l * B);
+            return aStart + (k * A);
         }
 
         /// <inheritdoc cref="FindIntersectingPointOrNull(FlatPoint, Vector2D, FlatPoint, Vector2D)"/>
@@ -160,7 +190,7 @@ namespace SmallGeometry.Euclidean
 
 
         /// <summary>
-        /// Finding l
+        /// Finding K
         /// </summary>
         /// <param name="aStart"></param>
         /// <param name="A"></param>
@@ -169,7 +199,7 @@ namespace SmallGeometry.Euclidean
         /// <returns></returns>
         /// <exception cref="ArgumentException">Vector A and B are parallel(including Zero vector condition).</exception>
         /// <exception cref="CoordinateSystemDiscordanceException"></exception>
-        private static double CalculateL(FlatPoint aStart, Vector2D A, FlatPoint bStart, Vector2D B)
+        private static double CalculateK(FlatPoint aStart, Vector2D A, FlatPoint bStart, Vector2D B)
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(aStart, bStart);
             if (Vector2D.IsParallel(A, B))
@@ -180,25 +210,25 @@ namespace SmallGeometry.Euclidean
 
             // Solving equation
             // aStart + k*A = bStart + l*B
-            if (A.X != 0
-                && A.Y != 0)
+            if (B.X != 0
+                && B.Y != 0)
             {
                 // aStart + k*A = bStart + l*B
-                double lCoef = (B.X / A.X) - (B.Y / A.Y);
-                double rhs = (bStart.Y - aStart.Y) / A.Y - (bStart.X - aStart.X) / A.X;
-                return rhs / lCoef;
+                double kCoef = (A.X / B.X) - (A.Y / B.Y);
+                double rhs = (aStart.Y - bStart.Y) / B.Y - (aStart.X - bStart.X) / B.X;
+                return rhs / kCoef;
             }
-            else if (A.X == 0)
+            else if (B.X == 0)
             {
-                // aStart.X = bStart.X + l * B.X
-                // B.X is not 0 because A,B are not parallel
-                return (aStart.X - bStart.X) / B.X;
+                // aStart.X - bStart.X + k*A.X = 0
+                // A.X is not 0 because A,B are not parallel
+                return (bStart.X - aStart.X) / A.X;
             }
-            else // A.Y == 0
+            else // B.Y == 0
             {
-                // aStart.Y = bStart.Y + l * B.Y
-                // B.Y is not 0 because A,B are not parallel
-                return (bStart.Y - aStart.Y) / B.Y;
+                // aStart.Y - bStart.Y + k*A.Y = 0
+                // A.Y is not 0 because A,B are not parallel
+                return (bStart.Y - aStart.Y) / A.Y;
             }
         }
     }

@@ -16,8 +16,8 @@ namespace SmallGeometryTester
             var points = new List<FlatPoint>()
             {
                 new FlatPoint(
-                    RNG.NextDouble() * 10,
-                    RNG.NextDouble() * 10,
+                    RNG.NextDouble(),
+                    RNG.NextDouble(),
                     CoordinateSystem.Epsg5179)
             };
 
