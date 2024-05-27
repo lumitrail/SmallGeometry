@@ -34,7 +34,6 @@ namespace SmallGeometry.Euclidean
         public FlatLineSegment(FlatPoint start, FlatPoint end)
         {
             CoordinateSystemDiscordanceException.ThrowWhenDifferent(start, end);
-            CoordinateSystem = start.CoordinateSystem;
 
             Start = start;
             End = end;

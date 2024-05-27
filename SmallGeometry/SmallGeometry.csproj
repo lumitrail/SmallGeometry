@@ -5,6 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageId>SmallGeometry</PackageId>
+    <Title>SmallGeometry</Title>
+    <Version>0.1</Version>
+    <Authors>lumitrail</Authors>
+    <Company>lumitrail</Company>
+    <Product>SmallGeometry</Product>
+    <PackageProjectUrl>https://github.com/lumitrail/SmallGeometry</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lumitrail/SmallGeometry</RepositoryUrl>
+    <PackageTags>C#;.NET8.0</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
