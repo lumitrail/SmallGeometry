@@ -200,7 +200,7 @@ namespace SmallGeometry.Euclidean
         /// </summary>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public FlatLine Interpolate(int maxDistance)
+        public FlatLine Interpolate(double maxDistance)
         {
             int estimatedCount = (int)(GetLength() / maxDistance) + Count;
             var result = new List<FlatPoint>(estimatedCount);
