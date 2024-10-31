@@ -138,10 +138,6 @@ namespace SmallGeometry
             {
                 return sourcePoint;
             }
-            else if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
-            {
-                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
-            }
             else if (targetCoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(targetCoordinateSystem));
@@ -149,6 +145,10 @@ namespace SmallGeometry
             else if (sourcePoint.CoordinateSystem == CoordinateSystem.None)
             {
                 throw new CoordinateSystemNoneException(nameof(sourcePoint));
+            }
+            else if (!CoordinateSystemUtil.IsCoordinateSystemFlat(targetCoordinateSystem))
+            {
+                throw new NotSupportedException(ExceptionMessages.CoordinateSystemMustBeFlat + targetCoordinateSystem);
             }
             else
             {

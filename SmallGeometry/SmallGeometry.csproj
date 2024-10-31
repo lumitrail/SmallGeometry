@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageId>SmallGeometry</PackageId>
     <Title>SmallGeometry</Title>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Authors>lumitrail</Authors>
     <Company>lumitrail</Company>
     <Product>SmallGeometry</Product>
